@@ -5,6 +5,12 @@ import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.DTO.RegisterRequestDTO;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticación", description = "Endpoints para autenticación y registro de usuarios")
 public class AuthController {
 
     private final AuthService service;
@@ -23,6 +30,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Autentica a un usuario y devuelve un token JWT")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login exitoso",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = LoginResponseDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
+    })
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request) {
         try {
             LoginResponseDTO resp = service.login(request);
@@ -33,9 +47,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario con rol específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Error en el registro")
+    })
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
         try {
-            String msg = service.register(request.getUsername(), request.getPassword());
+            String msg = service.register(request.getUsername(), request.getPassword(), request.getRole());
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));

@@ -157,6 +157,6 @@ public class ScheduleCrudControllerTest extends BaseControllerTest {
         doNothing().when(scheduleService).deleteByDay(anyString());
 
         mockMvc.perform(delete("/schedules-crud/by-day/Lunes"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 }

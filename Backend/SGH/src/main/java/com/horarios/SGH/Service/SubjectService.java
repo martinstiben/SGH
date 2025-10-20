@@ -1,7 +1,6 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.SubjectDTO;
-import com.horarios.SGH.IService.ISubjectService;
 import com.horarios.SGH.Model.subjects;
 import com.horarios.SGH.Repository.Isubjects;
 import com.horarios.SGH.Repository.IScheduleRepository;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SubjectService implements ISubjectService {
+public class SubjectService {
 
     private final Isubjects repo;
     private final IScheduleRepository scheduleRepo;

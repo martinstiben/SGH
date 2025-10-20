@@ -1,9 +1,9 @@
 package com.horarios.SGH.Controller;
 
 import com.horarios.SGH.DTO.ScheduleHistoryDTO;
-import com.horarios.SGH.IService.IScheduleGenerationService;
-import com.horarios.SGH.IService.IScheduleHistoryService;
 import com.horarios.SGH.Service.ScheduleExportService;
+import com.horarios.SGH.Service.ScheduleGenerationService;
+import com.horarios.SGH.Service.ScheduleHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Horarios", description = "Gestión de generación y exportación de horarios")
 public class ScheduleController {
 
-    private final IScheduleGenerationService generationService;
-    private final IScheduleHistoryService historyService;
+    private final ScheduleGenerationService generationService;
+    private final ScheduleHistoryService historyService;
     private final ScheduleExportService exportService;
 
     @PostMapping("/generate")

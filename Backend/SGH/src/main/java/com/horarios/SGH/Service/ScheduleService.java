@@ -1,7 +1,6 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.ScheduleDTO;
-import com.horarios.SGH.IService.IScheduleService;
 import com.horarios.SGH.Model.Days;
 import com.horarios.SGH.Model.TeacherAvailability;
 import com.horarios.SGH.Model.schedule;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleService implements IScheduleService {
+public class ScheduleService {
 
     private final IScheduleRepository scheduleRepo;
     private final ITeacherAvailabilityRepository availabilityRepo;
@@ -54,7 +53,6 @@ public class ScheduleService implements IScheduleService {
     }
 
     @Transactional
-    @Override
     public List<ScheduleDTO> createSchedule(List<ScheduleDTO> assignments, String executedBy) {
         List<schedule> entities = new ArrayList<>();
 
@@ -110,7 +108,6 @@ public class ScheduleService implements IScheduleService {
     }
 
     @Transactional(readOnly = true)
-    @Override
     public List<ScheduleDTO> getByName(String scheduleName) {
         return scheduleRepo.findByScheduleName(scheduleName)
                 .stream()
@@ -118,23 +115,19 @@ public class ScheduleService implements IScheduleService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public List<ScheduleDTO> getByCourse(Integer courseId) {
         return scheduleRepo.findByCourseId(courseId).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    @Override
     public List<ScheduleDTO> getByTeacher(Integer teacherId) {
         return scheduleRepo.findByTeacherId(teacherId).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    @Override
     public List<ScheduleDTO> getAll() {
         return scheduleRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @Transactional
-    @Override
     public ScheduleDTO updateSchedule(Integer id, ScheduleDTO dto, String executedBy) {
         System.out.println("Updating schedule with id: " + id + ", dto: " + dto);
         schedule existing = scheduleRepo.findById(id).orElseThrow(() -> new RuntimeException("Horario no encontrado"));
@@ -194,7 +187,6 @@ public class ScheduleService implements IScheduleService {
     }
 
     @Transactional
-    @Override
     public void deleteSchedule(Integer id, String executedBy) {
         if (!scheduleRepo.existsById(id)) {
             throw new RuntimeException("Horario no encontrado");
@@ -203,7 +195,6 @@ public class ScheduleService implements IScheduleService {
     }
 
     @Transactional
-    @Override
     public void deleteByDay(String day) {
         scheduleRepo.deleteByDay(day);
     }

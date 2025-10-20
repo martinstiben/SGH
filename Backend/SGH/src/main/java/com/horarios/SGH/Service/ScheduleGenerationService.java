@@ -1,7 +1,6 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.ScheduleHistoryDTO;
-import com.horarios.SGH.IService.IScheduleGenerationService;
 import com.horarios.SGH.Model.*;
 import com.horarios.SGH.Model.schedule;
 import com.horarios.SGH.Repository.*;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleGenerationService implements IScheduleGenerationService {
+public class ScheduleGenerationService {
 
     private final IScheduleHistory historyRepository;
     private final Icourses courseRepo;

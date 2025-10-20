@@ -11,11 +11,10 @@ import com.horarios.SGH.Model.users;
 import com.horarios.SGH.Repository.Iusers;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
-import com.horarios.SGH.IService.IAuthService;
 import com.horarios.SGH.jwt.JwtTokenProvider;
 
 @Service
-public class AuthService implements IAuthService {
+public class AuthService {
 
     private final Iusers repo;
     private final PasswordEncoder encoder;

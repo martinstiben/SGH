@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Model.users;
 import com.horarios.SGH.Repository.Iusers;
 import com.horarios.SGH.DTO.LoginRequestDTO;
@@ -31,7 +32,7 @@ public class AuthService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public String register(String username, String rawPassword) {
+    public String register(String username, String rawPassword, Role role) {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
         }
@@ -56,18 +57,18 @@ public class AuthService {
             throw new IllegalArgumentException("La contraseña no puede estar vacía");
         }
 
+        if (role == null) {
+            throw new IllegalArgumentException("El rol no puede ser nulo");
+        }
+
         repo.findByUserName(username).ifPresent(u -> {
             throw new IllegalStateException("El nombre de usuario ya está en uso");
         });
 
-        long total = repo.count();
-        if (total >= 2) {
-            throw new IllegalStateException("Límite de usuarios alcanzado (solo 2 usuarios)");
-        }
-
         users u = new users();
         u.setUserName(username);
         u.setPassword(encoder.encode(rawPassword));
+        u.setRole(role);
         repo.save(u);
         return "Usuario registrado correctamente";
     }
@@ -82,13 +83,15 @@ public class AuthService {
     }
 
     public users getProfile() {
-        // Como /auth/** es público, no hay autenticación, así que devolvemos el primer usuario
-        return repo.findAll().stream().findFirst().orElseThrow(() -> new RuntimeException("No hay usuarios"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        return repo.findByUserName(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     public void updateUserName(String newName) {
-        // Actualizamos el primer usuario
-        users user = repo.findAll().stream().findFirst().orElseThrow(() -> new RuntimeException("No hay usuarios"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        users user = repo.findByUserName(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setUserName(newName);
         repo.save(user);
     }

@@ -1,7 +1,9 @@
 package com.horarios.SGH.DTO;
 
+import com.horarios.SGH.Model.Role;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -14,4 +16,7 @@ public class usersDTO {
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
+
+    @NotNull(message = "El rol no puede ser nulo")
+    private Role role;
 }

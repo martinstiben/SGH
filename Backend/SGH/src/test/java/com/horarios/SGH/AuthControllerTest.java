@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.horarios.SGH.Controller.AuthController;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
+import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -71,23 +71,23 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register("testuser", "password")).thenReturn("Usuario registrado correctamente");
+        when(authService.register("testuser", "password", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\"}"))
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register("testuser", "password"))
+        when(authService.register("testuser", "password", Role.MAESTRO))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\"}"))
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -110,6 +110,7 @@ public class AuthControllerTest {
     @Test
     public void testGetProfile() throws Exception {
         com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "testuser", "password");
+        user.setRole(Role.MAESTRO);
         when(authService.getProfile()).thenReturn(user);
 
         mockMvc.perform(get("/auth/profile"))

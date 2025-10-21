@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
@@ -50,18 +51,31 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario con rol específico")
+    @PostMapping(value = "/register", consumes = {"multipart/form-data"})
+    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario con rol específico y foto opcional")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente"),
         @ApiResponse(responseCode = "400", description = "Error en el registro")
     })
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<?> register(
+            @RequestParam("username") String username,
+            @RequestParam("password") String password,
+            @RequestParam("role") Role role,
+            @RequestParam(value = "teacherName", required = false) String teacherName,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
         try {
-            String msg = service.register(request.getUsername(), request.getPassword(), request.getRole());
+            RegisterRequestDTO request = new RegisterRequestDTO();
+            request.setUsername(username);
+            request.setPassword(password);
+            request.setRole(role);
+            request.setTeacherName(teacherName);
+
+            String msg = service.register(request, photo);
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno del servidor"));
         }
     }
 

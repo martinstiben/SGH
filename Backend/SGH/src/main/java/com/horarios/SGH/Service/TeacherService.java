@@ -55,6 +55,7 @@ public class TeacherService {
             TeacherDTO dto = new TeacherDTO();
             dto.setTeacherId(t.getId());
             dto.setTeacherName(t.getTeacherName());
+            dto.setPhotoPath(t.getPhotoPath());
 
             // Compatibilidad: si existe relación TeacherSubject, usamos el primer subjectId
             List<TeacherSubject> tsList = teacherSubjectRepo.findByTeacher_Id(t.getId());
@@ -88,6 +89,7 @@ public class TeacherService {
             TeacherDTO dto = new TeacherDTO();
             dto.setTeacherId(t.getId());
             dto.setTeacherName(t.getTeacherName());
+            dto.setPhotoPath(t.getPhotoPath());
 
             List<TeacherSubject> tsList = teacherSubjectRepo.findByTeacher_Id(t.getId());
             if (!tsList.isEmpty()) {

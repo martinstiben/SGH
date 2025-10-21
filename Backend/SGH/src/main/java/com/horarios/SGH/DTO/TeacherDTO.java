@@ -18,6 +18,9 @@ public class TeacherDTO {
     // Información de disponibilidad
     private String availabilitySummary;
 
+    // Información de foto
+    private String photoPath;
+
     public TeacherDTO() {}
 
     public TeacherDTO(String teacherName) {
@@ -57,5 +60,13 @@ public class TeacherDTO {
 
     public void setAvailabilitySummary(String availabilitySummary) {
         this.availabilitySummary = availabilitySummary;
+    }
+
+    public String getPhotoPath() {
+        return photoPath;
+    }
+
+    public void setPhotoPath(String photoPath) {
+        this.photoPath = photoPath;
     }
 }

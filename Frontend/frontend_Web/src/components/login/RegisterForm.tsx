@@ -1,21 +1,32 @@
 "use client";
 import { useState } from "react";
-import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Users } from "lucide-react";
 
-interface LoginFormProps {
+interface RegisterFormProps {
   onBack?: () => void;
-  onSubmit?: (data: { user: string; password: string; acceptTerms: boolean }) => void;
+  onSubmit?: (data: { user: string; password: string; role: string; acceptTerms: boolean }) => void;
   authError?: string;
   successMessage?: string;
 }
 
-export default function LoginForm({ onBack, onSubmit, authError, successMessage }: LoginFormProps) {
+export default function RegisterForm({ onBack, onSubmit, authError, successMessage }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userError, setUserError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [roleError, setRoleError] = useState("");
+  const [termsError, setTermsError] = useState("");
+
+  const roles = [
+    { value: "Coordinador", label: "Coordinador" },
+    { value: "Director de area", label: "Director de Área" },
+    { value: "Maestro", label: "Maestro" },
+    { value: "Estudiante", label: "Estudiante" },
+  ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,6 +34,8 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
     // Limpiar errores previos
     setUserError("");
     setPasswordError("");
+    setRoleError("");
+    setTermsError("");
 
     let hasError = false;
 
@@ -51,13 +64,23 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
       hasError = true;
     }
 
+    if (!role) {
+      setRoleError('Debes seleccionar un rol');
+      hasError = true;
+    }
+
+    if (!acceptTerms) {
+      setTermsError('Debes aceptar los términos y condiciones');
+      hasError = true;
+    }
+
     if (hasError) return;
 
     setIsLoading(true);
 
     try {
       if (onSubmit) {
-        await onSubmit({ user, password, acceptTerms: true });
+        await onSubmit({ user, password, role, acceptTerms });
       }
     } finally {
       setIsLoading(false);
@@ -83,7 +106,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
             className="mx-auto mb-4 w-20 h-20 sm:w-24 sm:h-24 object-contain"
           />
           <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2">
-            Inicio de sesión
+            Registro de usuario
           </h1>
         </div>
 
@@ -142,19 +165,74 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
             <p className="text-red-400 text-sm mt-1">{passwordError}</p>
           )}
 
-          {/* Botón Ingresar */}
+          {/* Rol */}
+          <div className="relative">
+            <Users
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <select
+              value={role}
+              onChange={(e) => {
+                setRole(e.target.value);
+                if (roleError) setRoleError(""); // Limpiar error al seleccionar
+              }}
+              className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                (roleError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+              }`}
+            >
+              <option value="" disabled>Selecciona tu rol</option>
+              {roles.map((r) => (
+                <option key={r.value} value={r.value} className="bg-gray-800 text-white">
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {roleError && (
+            <p className="text-red-400 text-sm mt-1">{roleError}</p>
+          )}
+
+          {/* Términos y condiciones */}
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="acceptTerms"
+              checked={acceptTerms}
+              onChange={(e) => {
+                setAcceptTerms(e.target.checked);
+                if (termsError) setTermsError(""); // Limpiar error al marcar
+              }}
+              className="mt-1 w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+            />
+            <label htmlFor="acceptTerms" className="text-sm text-gray-300">
+              Acepto los{" "}
+              <a href="#" className="text-blue-400 hover:text-blue-300 underline">
+                términos y condiciones
+              </a>{" "}
+              y la{" "}
+              <a href="#" className="text-blue-400 hover:text-blue-300 underline">
+                política de privacidad
+              </a>
+            </label>
+          </div>
+          {termsError && (
+            <p className="text-red-400 text-sm mt-1">{termsError}</p>
+          )}
+
+          {/* Botón Registrarse */}
           <button
             type="submit"
-            disabled={isLoading || !user || !password}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.01] disabled:scale-100 shadow-lg text-sm sm:text-base"
+            disabled={isLoading || !user || !password || !role || !acceptTerms}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.01] disabled:scale-100 shadow-lg text-sm sm:text-base"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                Ingresando...
+                Registrando...
               </div>
             ) : (
-              "Ingresar"
+              "Registrarse"
             )}
           </button>
         </form>
@@ -163,15 +241,15 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
           <p className="text-green-400 text-sm mt-4 text-center">{successMessage}</p>
         )}
 
-        {/* Enlace a registro */}
+        {/* Enlace a login */}
         <div className="text-center mt-4">
           <p className="text-gray-300 text-sm">
-            ¿No tienes cuenta?{" "}
+            ¿Ya tienes cuenta?{" "}
             <a
-              href="/register"
+              href="/login"
               className="text-blue-400 hover:text-blue-300 underline font-medium"
             >
-              Regístrate aquí
+              Inicia sesión aquí
             </a>
           </p>
         </div>

@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, User, Lock, Users } from "lucide-react";
+import { getRoles } from "@/api/services/userApi";
 
 interface RegisterFormProps {
   onBack?: () => void;
@@ -11,6 +12,28 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ onBack, onSubmit, authError, successMessage }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const data = await getRoles();
+        setRoles(data.roles || []);
+      } catch (error) {
+        console.error("Error cargando roles:", error);
+        // Fallback a roles hardcodeados si falla la API
+        setRoles([
+          { value: "COORDINADOR", label: "Coordinador" },
+          { value: "DIRECTOR_DE_AREA", label: "Director de Área" },
+          { value: "MAESTRO", label: "Maestro" },
+          { value: "ESTUDIANTE", label: "Estudiante" },
+        ]);
+      } finally {
+        setRolesLoading(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
@@ -20,13 +43,8 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
   const [passwordError, setPasswordError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [termsError, setTermsError] = useState("");
-
-  const roles = [
-    { value: "Coordinador", label: "Coordinador" },
-    { value: "Director de area", label: "Director de Área" },
-    { value: "Maestro", label: "Maestro" },
-    { value: "Estudiante", label: "Estudiante" },
-  ];
+  const [roles, setRoles] = useState<{ value: string; label: string }[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -177,11 +195,14 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
                 setRole(e.target.value);
                 if (roleError) setRoleError(""); // Limpiar error al seleccionar
               }}
+              disabled={rolesLoading}
               className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                 (roleError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
-              }`}
+              } ${rolesLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <option value="" disabled>Selecciona tu rol</option>
+              <option value="" disabled>
+                {rolesLoading ? "Cargando roles..." : "Selecciona tu rol"}
+              </option>
               {roles.map((r) => (
                 <option key={r.value} value={r.value} className="bg-gray-800 text-white">
                   {r.label}
@@ -223,7 +244,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
           {/* Botón Registrarse */}
           <button
             type="submit"
-            disabled={isLoading || !user || !password || !role || !acceptTerms}
+            disabled={isLoading || !user || !password || !role || !acceptTerms || rolesLoading}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.01] disabled:scale-100 shadow-lg text-sm sm:text-base"
           >
             {isLoading ? (

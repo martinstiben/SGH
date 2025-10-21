@@ -3,6 +3,7 @@ package com.horarios.SGH.Controller;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.DTO.RegisterRequestDTO;
+import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -97,6 +101,40 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("message", "Nombre actualizado correctamente"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error actualizando nombre"));
+        }
+    }
+
+    @GetMapping("/roles")
+    @Operation(summary = "Obtener roles disponibles", description = "Devuelve la lista de roles disponibles para registro")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de roles obtenida exitosamente")
+    })
+    public ResponseEntity<?> getRoles() {
+        try {
+            List<Map<String, String>> roles = Arrays.stream(Role.values())
+                .map(role -> Map.of(
+                    "value", role.name(),
+                    "label", getRoleLabel(role)
+                ))
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(Map.of("roles", roles));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo roles"));
+        }
+    }
+
+    private String getRoleLabel(Role role) {
+        switch (role) {
+            case MAESTRO:
+                return "Maestro";
+            case COORDINADOR:
+                return "Coordinador";
+            case ESTUDIANTE:
+                return "Estudiante";
+            case DIRECTOR_DE_AREA:
+                return "Director de Área";
+            default:
+                return role.name();
         }
     }
 }

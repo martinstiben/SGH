@@ -97,3 +97,25 @@ export const updateUserName = async (name: string) => {
     throw error;
   }
 };
+
+export const getRoles = async () => {
+  try {
+    const response = await fetch(`${API_URL}/roles`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `Error ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    log.error("Error obteniendo roles", error);
+    throw error;
+  }
+};

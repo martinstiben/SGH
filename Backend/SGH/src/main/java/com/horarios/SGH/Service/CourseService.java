@@ -1,21 +1,16 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.CourseDTO;
-import com.horarios.SGH.Model.TeacherSubject;
 import com.horarios.SGH.Model.courses;
-import com.horarios.SGH.Model.subjects;
 import com.horarios.SGH.Model.teachers;
 import com.horarios.SGH.Repository.Icourses;
 import com.horarios.SGH.Repository.Iteachers;
-import com.horarios.SGH.Repository.Isubjects;
 import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,7 +20,6 @@ public class CourseService {
 
     private final Icourses courseRepo;
     private final Iteachers teacherRepo;
-    private final Isubjects subjectRepo;
     private final TeacherSubjectRepository teacherSubjectRepo;
 
     private static Comparator<CourseDTO> naturalOrderComparator() {

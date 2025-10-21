@@ -84,7 +84,10 @@ public class AuthController {
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("name", user.getUserName()));
+            return ResponseEntity.ok(Map.of(
+                "name", user.getUserName(),
+                "role", getRoleLabel(user.getRole())
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }

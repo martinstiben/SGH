@@ -1,7 +1,6 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.ScheduleHistoryDTO;
-import com.horarios.SGH.IService.IScheduleHistoryService;
 import com.horarios.SGH.Model.schedule_history;
 import com.horarios.SGH.Repository.IScheduleHistory;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +14,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleHistoryService implements IScheduleHistoryService {
+public class ScheduleHistoryService {
 
     private final IScheduleHistory historyRepository;
 
-    @Override
     public Page<ScheduleHistoryDTO> history(int page, int size) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "executedAt"));
         var histories = historyRepository.findAllByOrderByExecutedAtDesc(pageable);

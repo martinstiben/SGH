@@ -2,13 +2,11 @@ package com.horarios.SGH.Service;
 
 import org.springframework.stereotype.Service;
 
-import com.horarios.SGH.IService.ITokenRevocationService;
-
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class TokenRevocationService implements ITokenRevocationService {
+public class TokenRevocationService {
 
     // Almacén de tokens revocados (en producción usarías Redis o BD)
     private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();

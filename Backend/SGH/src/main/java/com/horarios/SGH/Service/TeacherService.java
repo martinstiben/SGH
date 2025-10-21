@@ -1,7 +1,6 @@
 package com.horarios.SGH.Service;
 
 import com.horarios.SGH.DTO.TeacherDTO;
-import com.horarios.SGH.IService.ITeacherService;
 import com.horarios.SGH.Model.TeacherAvailability;
 import com.horarios.SGH.Model.TeacherSubject;
 import com.horarios.SGH.Model.schedule;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class TeacherService implements ITeacherService {
+public class TeacherService {
 
     private final Isubjects subjectRepo;
     private final Iteachers teacherRepo;

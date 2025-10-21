@@ -2,6 +2,8 @@ package com.horarios.SGH.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +26,10 @@ public class users {
     @Column(name = "password")
     @Size(min = 8, max = 12, message = "La contraseña debe tener entre 8 y 12 caracteres")
         private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+        private Role role;
 
     public users(int userId, String userName, String password) {
         this.userId = userId;

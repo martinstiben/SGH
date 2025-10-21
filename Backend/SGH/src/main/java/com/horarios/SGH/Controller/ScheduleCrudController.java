@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,11 +20,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/schedules-crud")
-@RequiredArgsConstructor
 @Tag(name = "Horarios CRUD", description = "Operaciones CRUD para gestión manual de horarios")
 public class ScheduleCrudController {
 
     private final ScheduleService scheduleService;
+
+    public ScheduleCrudController(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
@@ -44,12 +45,17 @@ public class ScheduleCrudController {
         @ApiResponse(responseCode = "400", description = "Error de validación (profesor no disponible, conflicto de horario, etc.)"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public List<ScheduleDTO> createSchedule(
+    public ResponseEntity<List<ScheduleDTO>> createSchedule(
             @Parameter(description = "Lista de horarios a crear", required = true,
                        example = "[{\"courseId\": 12, \"teacherId\": 14, \"subjectId\": 8, \"day\": \"Lunes\", \"startTime\": \"06:06\", \"endTime\": \"07:00\", \"scheduleName\": \"Matemáticas - Juan Pérez\"}]")
             @RequestBody List<ScheduleDTO> assignments,
             Authentication auth) {
-        return scheduleService.createSchedule(assignments, auth.getName());
+        try {
+            List<ScheduleDTO> result = scheduleService.createSchedule(assignments, auth.getName());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @GetMapping("/{name}")
@@ -179,9 +185,14 @@ public class ScheduleCrudController {
         @ApiResponse(responseCode = "403", description = "No autorizado"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public void deleteByDay(
+    public ResponseEntity<Void> deleteByDay(
             @Parameter(description = "Día a eliminar", example = "Sábado")
             @PathVariable String day) {
-        scheduleService.deleteByDay(day);
+        try {
+            scheduleService.deleteByDay(day);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

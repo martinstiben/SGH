@@ -38,13 +38,14 @@ public class DataInitializer {
                 users u = new users();
                 u.setUserName(masterUsername);
                 u.setPassword(encoder.encode(masterPassword));
+                u.setRole(com.horarios.SGH.Model.Role.COORDINADOR); // Asignar rol al usuario master
                 repo.save(u);
                 System.out.println(">> Master creado: " + masterUsername);
             } else {
                 System.out.println(">> Master ya existe: " + masterUsername);
             }
             long total = repo.count();
-            System.out.println(">> Usuarios totales: " + total + " (máximo permitido: 2)");
+            System.out.println(">> Usuarios totales: " + total + " (sin límite)");
         };
     }
 

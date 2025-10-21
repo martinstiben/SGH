@@ -39,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
             return User.withUsername(u.getUserName())
                     .password(u.getPassword()) // BCrypt en BD
-                    .authorities(List.of())    // ajusta roles si los manejas
+                    .roles(u.getRole().name()) // asignar rol del usuario
                     .build();
         }
 
@@ -47,7 +47,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (masterUsername.equals(username)) {
             return User.withUsername(masterUsername)
                     .password(passwordEncoder.encode(masterPassword))
-                    .roles("ADMIN")
+                    .roles("COORDINADOR")
                     .build();
         }
 

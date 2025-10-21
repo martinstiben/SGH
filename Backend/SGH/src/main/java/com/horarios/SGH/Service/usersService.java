@@ -5,12 +5,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.horarios.SGH.IService.IUsersService;
 import com.horarios.SGH.Model.users;
 import com.horarios.SGH.Repository.Iusers;
 
 @Service
-public class usersService implements IUsersService {
+public class usersService {
 
     @Autowired
     private Iusers usersRepository;

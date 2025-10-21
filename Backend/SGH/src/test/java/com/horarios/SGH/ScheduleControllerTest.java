@@ -3,9 +3,9 @@ package com.horarios.SGH;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.horarios.SGH.Controller.ScheduleController;
 import com.horarios.SGH.DTO.ScheduleHistoryDTO;
-import com.horarios.SGH.IService.IScheduleGenerationService;
-import com.horarios.SGH.IService.IScheduleHistoryService;
 import com.horarios.SGH.Service.ScheduleExportService;
+import com.horarios.SGH.Service.ScheduleGenerationService;
+import com.horarios.SGH.Service.ScheduleHistoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,10 +32,10 @@ public class ScheduleControllerTest extends BaseControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private IScheduleGenerationService generationService;
+    private ScheduleGenerationService generationService;
 
     @MockBean
-    private IScheduleHistoryService historyService;
+    private ScheduleHistoryService historyService;
 
     @MockBean
     private ScheduleExportService exportService;

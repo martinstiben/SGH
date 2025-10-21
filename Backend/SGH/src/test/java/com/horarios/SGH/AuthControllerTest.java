@@ -3,7 +3,6 @@ package com.horarios.SGH;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.horarios.SGH.Controller.AuthController;
 import com.horarios.SGH.DTO.LoginRequestDTO;
-import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
@@ -40,26 +39,25 @@ public class AuthControllerTest {
     @Test
     public void testLoginSuccess() throws Exception {
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setUsername("testuser");
+        request.setEmail("test@example.com");
         request.setPassword("password");
-        LoginResponseDTO response = new LoginResponseDTO("jwt-token");
 
-        when(authService.login(any(LoginRequestDTO.class))).thenReturn(response);
+        when(authService.initiateLogin(any(LoginRequestDTO.class))).thenReturn("Código de verificación enviado al correo electrónico");
 
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("jwt-token"));
+                .andExpect(jsonPath("$.message").value("Código de verificación enviado al correo electrónico"));
     }
 
     @Test
     public void testLoginFailure() throws Exception {
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setUsername("testuser");
+        request.setEmail("test@example.com");
         request.setPassword("wrongpassword");
 
-        when(authService.login(any(LoginRequestDTO.class)))
+        when(authService.initiateLogin(any(LoginRequestDTO.class)))
                 .thenThrow(new RuntimeException("Credenciales inválidas"));
 
         mockMvc.perform(post("/auth/login")
@@ -71,23 +69,23 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register("testuser", "password", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
+        when(authService.register("Juan Pérez", "test@example.com", "password", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register("testuser", "password", Role.MAESTRO))
+        when(authService.register("Juan Pérez", "test@example.com", "password", Role.MAESTRO))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -109,13 +107,14 @@ public class AuthControllerTest {
 
     @Test
     public void testGetProfile() throws Exception {
-        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "testuser", "password");
+        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "Juan Pérez", "test@example.com", "password");
         user.setRole(Role.MAESTRO);
         when(authService.getProfile()).thenReturn(user);
 
         mockMvc.perform(get("/auth/profile"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("testuser"));
+                .andExpect(jsonPath("$.name").value("Juan Pérez"))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
     @Test

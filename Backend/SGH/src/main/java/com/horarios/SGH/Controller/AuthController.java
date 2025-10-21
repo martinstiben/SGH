@@ -3,6 +3,7 @@ package com.horarios.SGH.Controller;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.DTO.RegisterRequestDTO;
+import com.horarios.SGH.DTO.VerifyCodeDTO;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,19 +31,34 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión", description = "Autentica a un usuario y devuelve un token JWT")
+    @Operation(summary = "Iniciar sesión (Paso 1)", description = "Verifica credenciales con email y contraseña, y envía código de verificación al email")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Login exitoso",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = LoginResponseDTO.class))),
+        @ApiResponse(responseCode = "200", description = "Código enviado exitosamente"),
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request) {
         try {
-            LoginResponseDTO resp = service.login(request);
-            return ResponseEntity.ok(resp);
+            String message = service.initiateLogin(request);
+            return ResponseEntity.ok(Map.of("message", message));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Credenciales inválidas"));
+        }
+    }
+
+    @PostMapping("/verify-code")
+    @Operation(summary = "Verificar código (Paso 2)", description = "Verifica el código de 2FA enviado al email y devuelve token JWT")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Verificación exitosa",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = LoginResponseDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Código inválido o expirado")
+    })
+    public ResponseEntity<?> verifyCode(@Valid @RequestBody VerifyCodeDTO request) {
+        try {
+            LoginResponseDTO resp = service.verifyCode(request.getEmail(), request.getCode());
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -54,7 +70,7 @@ public class AuthController {
     })
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
         try {
-            String msg = service.register(request.getUsername(), request.getPassword(), request.getRole());
+            String msg = service.register(request.getName(), request.getEmail(), request.getPassword(), request.getRole());
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
@@ -80,7 +96,7 @@ public class AuthController {
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("name", user.getUserName()));
+            return ResponseEntity.ok(Map.of("name", user.getName(), "email", user.getEmail()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }

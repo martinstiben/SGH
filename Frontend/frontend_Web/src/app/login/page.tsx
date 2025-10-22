@@ -3,32 +3,66 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import LoginForm from "@/components/login/LoginForm";
-import { login } from "@/api/services/userApi";
+import CodeVerificationForm from "@/components/login/CodeVerificationForm";
+import { initiateLogin, verifyCode } from "@/api/services/userApi";
 import Cookies from 'js-cookie';
 
 export default function LoginPage() {
   const router = useRouter();
   const [authError, setAuthError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [step, setStep] = useState<"credentials" | "code">("credentials");
+  const [email, setEmail] = useState("");
 
-
-      
   interface LoginFormValues {
-    user: string;
+    email: string;
     password: string;
     acceptTerms: boolean;
   }
 
-  const handleLogin = async ({ user, password }: LoginFormValues) => {
-    if (!user || !password) {
-      setAuthError("Por favor ingresa usuario y contraseña.");
+  interface CodeFormValues {
+    code: string;
+  }
+
+  const handleLogin = async ({ email, password }: LoginFormValues) => {
+    if (!email || !password) {
+      setAuthError("Por favor ingresa email y contraseña.");
       return;
     }
 
     try {
       setAuthError("");
       setSuccessMessage("");
-      const data = await login(user, password);
+      setEmail(email);
+      const data = await initiateLogin(email, password);
+
+      if (data.message) {
+        setSuccessMessage("Código enviado a tu email. Revisa tu bandeja de entrada.");
+        setStep("code");
+      } else {
+        setAuthError("Error al iniciar sesión.");
+      }
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setAuthError("Email o contraseña incorrectos.");
+      } else if (err.response?.data?.message) {
+        setAuthError(err.response.data.message);
+      } else {
+        setAuthError("Email o contraseña incorrectos.");
+      }
+    }
+  };
+
+  const handleVerifyCode = async ({ code }: CodeFormValues) => {
+    if (!code) {
+      setAuthError("Por favor ingresa el código de verificación.");
+      return;
+    }
+
+    try {
+      setAuthError("");
+      setSuccessMessage("");
+      const data = await verifyCode(email, code);
 
       if (data.token) {
         Cookies.set("token", data.token, { expires: 1 }); // Expira en 1 día
@@ -37,17 +71,23 @@ export default function LoginPage() {
           router.push("/dashboard");
         }, 2000);
       } else {
-        setAuthError("No se recibió token. Verifica tus credenciales.");
+        setAuthError("No se recibió token. Verifica el código.");
       }
     } catch (err: any) {
-      if (err.response?.status === 401) {
-        setAuthError("Usuario o contraseña incorrectos.");
+      if (err.response?.status === 400) {
+        setAuthError("Código inválido o expirado.");
       } else if (err.response?.data?.message) {
         setAuthError(err.response.data.message);
       } else {
-        setAuthError("Usuario o contraseña incorrectos.");
+        setAuthError("Error al verificar el código.");
       }
     }
+  };
+
+  const handleBackToCredentials = () => {
+    setStep("credentials");
+    setAuthError("");
+    setSuccessMessage("");
   };
 
 
@@ -64,7 +104,20 @@ export default function LoginPage() {
       </button>
 
 
-      <LoginForm onSubmit={handleLogin} authError={authError} successMessage={successMessage} />
+      {step === "credentials" ? (
+        <LoginForm
+          onSubmit={handleLogin}
+          authError={authError}
+          successMessage={successMessage}
+        />
+      ) : (
+        <CodeVerificationForm
+          onSubmit={handleVerifyCode}
+          onBack={handleBackToCredentials}
+          authError={authError}
+          successMessage={successMessage}
+        />
+      )}
     </div>
   );
 }

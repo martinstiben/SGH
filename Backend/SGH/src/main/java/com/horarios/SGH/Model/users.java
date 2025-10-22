@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -31,6 +32,16 @@ public class users {
     @Column(name = "role")
         private Role role;
 
+    @Column(name = "photoData")
+    @Lob
+    private byte[] photoData;
+
+    @Column(name = "photoContentType", length = 100)
+    private String photoContentType;
+
+    @Column(name = "photoFileName", length = 255)
+    private String photoFileName;
+
     public users(int userId, String userName, String password) {
         this.userId = userId;
         this.userName = userName;
@@ -39,7 +50,7 @@ public class users {
 
     public users() {
     }
-    
+
     public int getUserId() {
         return userId;
     }
@@ -62,5 +73,29 @@ public class users {
 
     public void setPassword(String password) {
         this.password = password;
-    }   
+    }
+
+    public byte[] getPhotoData() {
+        return photoData;
+    }
+
+    public void setPhotoData(byte[] photoData) {
+        this.photoData = photoData;
+    }
+
+    public String getPhotoContentType() {
+        return photoContentType;
+    }
+
+    public void setPhotoContentType(String photoContentType) {
+        this.photoContentType = photoContentType;
+    }
+
+    public String getPhotoFileName() {
+        return photoFileName;
+    }
+
+    public void setPhotoFileName(String photoFileName) {
+        this.photoFileName = photoFileName;
+    }
 }

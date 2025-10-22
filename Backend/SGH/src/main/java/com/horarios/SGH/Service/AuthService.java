@@ -1,38 +1,55 @@
 package com.horarios.SGH.Service;
 
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.horarios.SGH.Model.Role;
+import com.horarios.SGH.Model.teachers;
 import com.horarios.SGH.Model.users;
+import com.horarios.SGH.Repository.Iteachers;
 import com.horarios.SGH.Repository.Iusers;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
+import com.horarios.SGH.DTO.RegisterRequestDTO;
 import com.horarios.SGH.jwt.JwtTokenProvider;
+
 
 @Service
 public class AuthService {
 
     private final Iusers repo;
+    private final Iteachers teacherRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final FileStorageService fileStorageService;
 
     public AuthService(Iusers repo,
-                       PasswordEncoder encoder,
-                       AuthenticationManager authManager,
-                       JwtTokenProvider jwtTokenProvider) {
+                        Iteachers teacherRepo,
+                        PasswordEncoder encoder,
+                        AuthenticationManager authManager,
+                        JwtTokenProvider jwtTokenProvider,
+                        FileStorageService fileStorageService) {
         this.repo = repo;
+        this.teacherRepo = teacherRepo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.fileStorageService = fileStorageService;
     }
 
-    public String register(String username, String rawPassword, Role role) {
+    public String register(RegisterRequestDTO request, MultipartFile photo) {
+        String username = request.getUsername();
+        String rawPassword = request.getPassword();
+        Role role = request.getRole();
+        String teacherName = request.getTeacherName();
+
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
         }
@@ -61,6 +78,8 @@ public class AuthService {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
 
+        // teacherName ya no es requerido en el registro, será opcional después
+
         repo.findByUserName(username).ifPresent(u -> {
             throw new IllegalStateException("El nombre de usuario ya está en uso");
         });
@@ -69,9 +88,18 @@ public class AuthService {
         u.setUserName(username);
         u.setPassword(encoder.encode(rawPassword));
         u.setRole(role);
-        repo.save(u);
+        users savedUser = repo.save(u);
+
+        // Si es profesor, crear registro en teachers (sin foto inicialmente)
+        if (role == Role.MAESTRO) {
+            teachers teacher = new teachers();
+            teacher.setTeacherName(teacherName != null ? teacherName : "Profesor"); // Nombre por defecto si no se proporciona
+            teacherRepo.save(teacher);
+        }
+
         return "Usuario registrado correctamente";
     }
+
 
     public LoginResponseDTO login(LoginRequestDTO req) {
         authManager.authenticate(

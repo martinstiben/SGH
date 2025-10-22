@@ -25,6 +25,9 @@ public class RegisterRequestDTO {
     @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "COORDINADOR", "ESTUDIANTE", "DIRECTOR_DE_AREA"})
     private Role role;
 
+    @Schema(description = "Nombre completo del profesor (requerido solo para rol MAESTRO)", example = "Juan Pérez")
+    private String teacherName;
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
@@ -33,4 +36,7 @@ public class RegisterRequestDTO {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public String getTeacherName() { return teacherName; }
+    public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
 }

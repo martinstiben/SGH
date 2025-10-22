@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "DTO para solicitud de login")
 public class LoginRequestDTO {
-    @NotBlank(message = "El nombre de usuario no puede estar vacío")
-    @Size(max = 50, message = "El nombre de usuario no puede exceder los 50 caracteres")
-    @Pattern(regexp = "^[a-z]*$", message = "El nombre de usuario solo puede contener letras minúsculas")
-    @Schema(description = "Nombre de usuario (solo letras minúsculas)", example = "usuarioejemplo")
+    @NotBlank(message = "El email no puede estar vacío")
+    @Size(max = 100, message = "El email no puede exceder los 100 caracteres")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "El email debe tener un formato válido")
+    @Schema(description = "Email del usuario", example = "usuario@example.com")
     private String username;
 
     @NotBlank(message = "La contraseña no puede estar vacía")

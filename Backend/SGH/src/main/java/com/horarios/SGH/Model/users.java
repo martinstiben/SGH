@@ -27,14 +27,19 @@ public class users {
     @Size(min = 8, max = 12, message = "La contraseña debe tener entre 8 y 12 caracteres")
         private String password;
 
+    @Column(name = "email")
+    @Size(min = 5, max = 100, message = "El email debe tener entre 5 y 100 caracteres")
+        private String email;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
         private Role role;
 
-    public users(int userId, String userName, String password) {
+    public users(int userId, String userName, String password, String email) {
         this.userId = userId;
         this.userName = userName;
         this.password = password;
+        this.email = email;
     }
 
     public users() {
@@ -62,5 +67,13 @@ public class users {
 
     public void setPassword(String password) {
         this.password = password;
-    }   
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

@@ -4,36 +4,33 @@ import { Eye, EyeOff, User, Lock } from "lucide-react";
 
 interface LoginFormProps {
   onBack?: () => void;
-  onSubmit?: (data: { user: string; password: string; acceptTerms: boolean }) => void;
+  onSubmit?: (data: { email: string; password: string; acceptTerms: boolean }) => void;
   authError?: string;
   successMessage?: string;
 }
 
 export default function LoginForm({ onBack, onSubmit, authError, successMessage }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userError, setUserError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Limpiar errores previos
-    setUserError("");
+    setEmailError("");
     setPasswordError("");
 
     let hasError = false;
 
-    if (!user.trim()) {
-      setUserError('El nombre de usuario es obligatorio');
+    if (!email.trim()) {
+      setEmailError('El email es obligatorio');
       hasError = true;
-    } else if (user.length > 50) {
-      setUserError('El nombre de usuario no puede exceder los 50 caracteres');
-      hasError = true;
-    } else if (!/^[a-z]*$/.test(user)) {
-      setUserError('El nombre de usuario solo puede contener letras minúsculas');
+    } else if (!/^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
+      setEmailError('El email debe tener un formato válido');
       hasError = true;
     }
 
@@ -57,7 +54,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
 
     try {
       if (onSubmit) {
-        await onSubmit({ user, password, acceptTerms: true });
+        await onSubmit({ email, password, acceptTerms: true });
       }
     } finally {
       setIsLoading(false);
@@ -89,27 +86,33 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Usuario */}
+          {/* Email */}
           <div className="relative">
-            <User
+            <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
             <input
-              type="text"
-              placeholder="Usuario"
-              value={user}
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
               onChange={(e) => {
-                setUser(e.target.value);
-                if (userError) setUserError(""); // Limpiar error al escribir
+                setEmail(e.target.value);
+                if (emailError) setEmailError(""); // Limpiar error al escribir
               }}
               className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                (userError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+                (emailError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
             />
           </div>
-          {(userError || authError) && (
-            <p className="text-red-400 text-sm mt-1">{userError || authError}</p>
+          {(emailError || authError) && (
+            <p className="text-red-400 text-sm mt-1">{emailError || authError}</p>
           )}
 
           {/* Contraseña */}
@@ -145,7 +148,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
           {/* Botón Ingresar */}
           <button
             type="submit"
-            disabled={isLoading || !user || !password}
+            disabled={isLoading || !email || !password}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.01] disabled:scale-100 shadow-lg text-sm sm:text-base"
           >
             {isLoading ? (

@@ -14,21 +14,21 @@ export default function LoginPage() {
 
       
   interface LoginFormValues {
-    user: string;
+    email: string;
     password: string;
     acceptTerms: boolean;
   }
 
-  const handleLogin = async ({ user, password }: LoginFormValues) => {
-    if (!user || !password) {
-      setAuthError("Por favor ingresa usuario y contraseña.");
+  const handleLogin = async ({ email, password }: LoginFormValues) => {
+    if (!email || !password) {
+      setAuthError("Por favor ingresa email y contraseña.");
       return;
     }
 
     try {
       setAuthError("");
       setSuccessMessage("");
-      const data = await login(user, password);
+      const data = await login(email, password);
 
       if (data.token) {
         Cookies.set("token", data.token, { expires: 1 }); // Expira en 1 día

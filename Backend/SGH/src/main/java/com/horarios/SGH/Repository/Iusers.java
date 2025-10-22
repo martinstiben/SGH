@@ -8,7 +8,9 @@ import com.horarios.SGH.Model.users;
 
 public interface Iusers extends JpaRepository<users, Integer> {
     Optional<users> findByUserName(String userName);
+    Optional<users> findByEmail(String email);
     boolean existsByUserName(String userName);
+    boolean existsByEmail(String email);
     long count();
     List<users> findByRole(Role role);
 }

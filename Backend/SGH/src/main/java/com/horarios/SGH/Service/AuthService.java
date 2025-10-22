@@ -32,7 +32,7 @@ public class AuthService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public String register(String username, String rawPassword, Role role) {
+    public String register(String username, String rawPassword, String email, Role role) {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
         }
@@ -57,6 +57,14 @@ public class AuthService {
             throw new IllegalArgumentException("La contraseña no puede estar vacía");
         }
 
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("El email no puede estar vacío");
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException("El email no tiene un formato válido");
+        }
+
         if (role == null) {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
@@ -65,20 +73,30 @@ public class AuthService {
             throw new IllegalStateException("El nombre de usuario ya está en uso");
         });
 
+        repo.findByEmail(email).ifPresent(u -> {
+            throw new IllegalStateException("El email ya está en uso");
+        });
+
         users u = new users();
         u.setUserName(username);
         u.setPassword(encoder.encode(rawPassword));
+        u.setEmail(email);
         u.setRole(role);
         repo.save(u);
         return "Usuario registrado correctamente";
     }
 
     public LoginResponseDTO login(LoginRequestDTO req) {
+        // Buscar usuario por email
+        users user = repo.findByEmail(req.getUsername())
+            .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+
+        // Autenticar con el username del usuario encontrado
         authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
+            new UsernamePasswordAuthenticationToken(user.getUserName(), req.getPassword())
         );
 
-        String token = jwtTokenProvider.generateToken(req.getUsername());
+        String token = jwtTokenProvider.generateToken(user.getUserName());
         return new LoginResponseDTO(token);
     }
 

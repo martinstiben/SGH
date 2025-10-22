@@ -171,29 +171,6 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
           {/* Email */}
           <div className="relative">
-            <User
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="email"
-              placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (emailError) setEmailError(""); // Limpiar error al escribir
-              }}
-              className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                (emailError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
-              }`}
-            />
-          </div>
-          {emailError && (
-            <p className="text-red-400 text-sm mt-1">{emailError}</p>
-          )}
-
-          {/* Email */}
-          <div className="relative">
             <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
               width="20"

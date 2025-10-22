@@ -105,7 +105,7 @@ public class AuthController {
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("name", user.getName(), "email", user.getEmail()));
+            return ResponseEntity.ok(Map.of("name", user.getName(), "email", user.getEmail(), "role", user.getRole().name()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }
@@ -149,6 +149,7 @@ public class AuthController {
     public ResponseEntity<?> getRoles() {
         try {
             List<Map<String, String>> roles = Arrays.stream(Role.values())
+                .filter(role -> role == Role.MAESTRO || role == Role.ESTUDIANTE)
                 .map(role -> Map.of(
                     "value", role.name(),
                     "label", getRoleLabel(role)

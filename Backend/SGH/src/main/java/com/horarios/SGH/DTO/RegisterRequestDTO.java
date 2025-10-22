@@ -28,7 +28,7 @@ public class RegisterRequestDTO {
     private String email;
 
     @NotNull(message = "El rol no puede ser nulo")
-    @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "COORDINADOR", "ESTUDIANTE", "DIRECTOR_DE_AREA"})
+    @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "ESTUDIANTE"})
     private Role role;
 
     public String getUsername() { return username; }

@@ -7,15 +7,18 @@ import { getUserProfile } from "@/api/services/userApi";
 export default function ProfileCard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("Cargando...");
+  const [userRole, setUserRole] = useState("Cargando...");
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const data = await getUserProfile();
         setUserName(data.name);
+        setUserRole(data.role || "Usuario");
       } catch (error) {
         console.error("Error loading profile:", error);
         setUserName("Error");
+        setUserRole("Error");
       }
     };
     loadProfile();
@@ -47,7 +50,7 @@ export default function ProfileCard() {
             {userName}
             <span className="w-3 h-3 bg-green-500 rounded-full"></span>
           </h3>
-          <p className="text-xs text-gray-500">Administrador</p>
+          <p className="text-xs text-gray-500">{userRole}</p>
         </div>
       </div>
 

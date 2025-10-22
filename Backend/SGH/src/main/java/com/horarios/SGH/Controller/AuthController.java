@@ -53,26 +53,15 @@ public class AuthController {
         }
     }
 
-    @PostMapping(value = "/register", consumes = {"multipart/form-data"})
-    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario con rol específico y foto opcional")
+    @PostMapping("/register")
+    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario con rol específico")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente"),
         @ApiResponse(responseCode = "400", description = "Error en el registro")
     })
-    public ResponseEntity<?> register(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password,
-            @RequestParam("role") Role role,
-            @RequestParam(value = "teacherName", required = false) String teacherName,
-            @RequestParam(value = "photo", required = false) MultipartFile photo) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
         try {
-            RegisterRequestDTO request = new RegisterRequestDTO();
-            request.setUsername(username);
-            request.setPassword(password);
-            request.setRole(role);
-            request.setTeacherName(teacherName);
-
-            String msg = service.register(request, photo);
+            String msg = service.register(request, null);
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));

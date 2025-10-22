@@ -78,9 +78,7 @@ public class AuthService {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
 
-        if (role == Role.MAESTRO && (teacherName == null || teacherName.trim().isEmpty())) {
-            throw new IllegalArgumentException("El nombre del profesor es requerido para el rol MAESTRO");
-        }
+        // teacherName ya no es requerido en el registro, será opcional después
 
         repo.findByUserName(username).ifPresent(u -> {
             throw new IllegalStateException("El nombre de usuario ya está en uso");
@@ -92,19 +90,10 @@ public class AuthService {
         u.setRole(role);
         users savedUser = repo.save(u);
 
-        // Si es profesor, crear registro en teachers
+        // Si es profesor, crear registro en teachers (sin foto inicialmente)
         if (role == Role.MAESTRO) {
             teachers teacher = new teachers();
-            teacher.setTeacherName(teacherName);
-
-            // Procesar foto si se proporcionó
-            if (photo != null && !photo.isEmpty()) {
-                FileStorageService.PhotoData photoData = fileStorageService.processImageFile(photo);
-                teacher.setPhotoData(photoData.getData());
-                teacher.setPhotoContentType(photoData.getContentType());
-                teacher.setPhotoFileName(photoData.getFileName());
-            }
-
+            teacher.setTeacherName(teacherName != null ? teacherName : "Profesor"); // Nombre por defecto si no se proporciona
             teacherRepo.save(teacher);
         }
 

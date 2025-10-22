@@ -76,11 +76,9 @@ public class AuthControllerTest {
     public void testRegisterSuccess() throws Exception {
         when(authService.register(any(), any())).thenReturn("Usuario registrado correctamente");
 
-        mockMvc.perform(multipart("/auth/register")
-                .param("username", "testuser")
-                .param("password", "password")
-                .param("role", "MAESTRO")
-                .param("teacherName", "Juan Pérez"))
+        mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
@@ -90,11 +88,9 @@ public class AuthControllerTest {
         when(authService.register(any(), any()))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
-        mockMvc.perform(multipart("/auth/register")
-                .param("username", "testuser")
-                .param("password", "password")
-                .param("role", "MAESTRO")
-                .param("teacherName", "Juan Pérez"))
+        mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
                 .andExpect(status().isBadRequest());
     }
 

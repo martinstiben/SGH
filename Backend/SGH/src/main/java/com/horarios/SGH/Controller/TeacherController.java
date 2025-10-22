@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
@@ -162,6 +163,32 @@ public class TeacherController {
         }
     }
 
+    // Actualizar foto de perfil del profesor
+    @PutMapping("/{id}/photo")
+    public ResponseEntity<responseDTO> updateTeacherPhoto(@PathVariable int id, @RequestParam("photo") MultipartFile photo) {
+        try {
+            String result = service.updateTeacherPhoto(id, photo);
+            return ResponseEntity.ok(new responseDTO("OK", result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new responseDTO("ERROR", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new responseDTO("ERROR", "Error al actualizar foto: " + e.getMessage()));
+        }
+    }
+
+    // Eliminar foto de perfil del profesor
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<responseDTO> deleteTeacherPhoto(@PathVariable int id) {
+        try {
+            String result = service.updateTeacherPhoto(id, null);
+            return ResponseEntity.ok(new responseDTO("OK", result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new responseDTO("ERROR", "Error al eliminar foto: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}/photo")
     public ResponseEntity<byte[]> getTeacherPhoto(@PathVariable int id) {
         try {
@@ -175,7 +202,7 @@ public class TeacherController {
                     .header("Content-Disposition", "inline; filename=\"" + (teacher.getPhotoFileName() != null ? teacher.getPhotoFileName() : "photo.jpg") + "\"")
                     .body(teacher.getPhotoData());
         } catch (Exception e) {
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

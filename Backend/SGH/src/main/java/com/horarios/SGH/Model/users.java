@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -19,32 +20,48 @@ public class users {
     @Column(name = "userId")
         private int userId;
 
-    @Column(name = "userName")
-    @Size(min = 3, max = 50, message = "El nombre de usuario debe tener entre 3 y 50 caracteres")
-        private String userName;
+    @Column(name = "name")
+    @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
+        private String name;
+
+    @Column(name = "email")
+    @Size(min = 3, max = 100, message = "El correo electrónico debe tener entre 3 y 100 caracteres")
+        private String email;
 
     @Column(name = "password")
     @Size(min = 8, max = 12, message = "La contraseña debe tener entre 8 y 12 caracteres")
         private String password;
 
-    @Column(name = "email")
-    @Size(min = 5, max = 100, message = "El email debe tener entre 5 y 100 caracteres")
-        private String email;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
         private Role role;
 
-    public users(int userId, String userName, String password, String email) {
+    @Column(name = "verification_code")
+        private String verificationCode;
+
+    @Column(name = "code_expiration")
+        private java.time.LocalDateTime codeExpiration;
+
+    @Column(name = "photoData")
+    @Lob
+    private byte[] photoData;
+
+    @Column(name = "photoContentType", length = 100)
+    private String photoContentType;
+
+    @Column(name = "photoFileName", length = 255)
+    private String photoFileName;
+
+    public users(int userId, String name, String email, String password) {
         this.userId = userId;
-        this.userName = userName;
-        this.password = password;
+        this.name = name;
         this.email = email;
+        this.password = password;
     }
 
     public users() {
     }
-    
+
     public int getUserId() {
         return userId;
     }
@@ -53,12 +70,29 @@ public class users {
         this.userId = userId;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    // Para compatibilidad con autenticación, getUserName retorna email
     public String getUserName() {
-        return userName;
+        return email;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.email = userName;
     }
 
     public String getPassword() {
@@ -69,11 +103,51 @@ public class users {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
+    public String getVerificationCode() {
+        return verificationCode;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public java.time.LocalDateTime getCodeExpiration() {
+        return codeExpiration;
+    }
+
+    public void setCodeExpiration(java.time.LocalDateTime codeExpiration) {
+        this.codeExpiration = codeExpiration;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public byte[] getPhotoData() {
+        return photoData;
+    }
+
+    public void setPhotoData(byte[] photoData) {
+        this.photoData = photoData;
+    }
+
+    public String getPhotoContentType() {
+        return photoContentType;
+    }
+
+    public void setPhotoContentType(String photoContentType) {
+        this.photoContentType = photoContentType;
+    }
+
+    public String getPhotoFileName() {
+        return photoFileName;
+    }
+
+    public void setPhotoFileName(String photoFileName) {
+        this.photoFileName = photoFileName;
     }
 }

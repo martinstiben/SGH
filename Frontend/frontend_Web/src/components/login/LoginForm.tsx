@@ -27,10 +27,10 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
     let hasError = false;
 
     if (!email.trim()) {
-      setEmailError('El email es obligatorio');
+      setEmailError('El correo electrónico es obligatorio');
       hasError = true;
-    } else if (!/^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
-      setEmailError('El email debe tener un formato válido');
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      setEmailError('El correo electrónico debe tener un formato válido');
       hasError = true;
     }
 

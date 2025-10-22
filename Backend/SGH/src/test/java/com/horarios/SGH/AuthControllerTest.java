@@ -3,7 +3,6 @@ package com.horarios.SGH;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.horarios.SGH.Controller.AuthController;
 import com.horarios.SGH.DTO.LoginRequestDTO;
-import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
@@ -34,32 +33,34 @@ public class AuthControllerTest {
     @MockBean
     private TokenRevocationService tokenRevocationService;
 
+    @MockBean
+    private com.horarios.SGH.Service.usersService usersService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
     public void testLoginSuccess() throws Exception {
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setUsername("testuser");
+        request.setEmail("test@example.com");
         request.setPassword("password");
-        LoginResponseDTO response = new LoginResponseDTO("jwt-token");
 
-        when(authService.login(any(LoginRequestDTO.class))).thenReturn(response);
+        when(authService.initiateLogin(any(LoginRequestDTO.class))).thenReturn("Código de verificación enviado al correo electrónico");
 
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("jwt-token"));
+                .andExpect(jsonPath("$.message").value("Código de verificación enviado al correo electrónico"));
     }
 
     @Test
     public void testLoginFailure() throws Exception {
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setUsername("testuser");
+        request.setEmail("test@example.com");
         request.setPassword("wrongpassword");
 
-        when(authService.login(any(LoginRequestDTO.class)))
+        when(authService.initiateLogin(any(LoginRequestDTO.class)))
                 .thenThrow(new RuntimeException("Credenciales inválidas"));
 
         mockMvc.perform(post("/auth/login")
@@ -71,23 +72,23 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register("testuser", "password", "test@example.com", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
+        when(authService.register(any(String.class), any(String.class), any(String.class), any(Role.class))).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register("testuser", "password", "test@example.com", Role.MAESTRO))
+        when(authService.register(any(String.class), any(String.class), any(String.class), any(Role.class)))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -109,32 +110,43 @@ public class AuthControllerTest {
 
     @Test
     public void testGetProfile() throws Exception {
-        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "testuser", "password", "test@example.com");
+        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users();
+        user.setUserId(1);
+        user.setName("Juan Pérez");
+        user.setEmail("test@example.com");
+        user.setPassword("password");
         user.setRole(Role.MAESTRO);
         when(authService.getProfile()).thenReturn(user);
 
         mockMvc.perform(get("/auth/profile"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("testuser"));
+                .andExpect(jsonPath("$.name").value("Juan Pérez"))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
     @Test
     public void testUpdateProfileSuccess() throws Exception {
         doNothing().when(authService).updateUserName("newname");
 
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"newname\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", "newname"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Nombre actualizado correctamente"));
+                .andExpect(jsonPath("$.message").value("Perfil actualizado correctamente"));
     }
 
     @Test
     public void testUpdateProfileEmptyName() throws Exception {
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", ""))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("El nombre no puede estar vacío"));
+                .andExpect(jsonPath("$.error").value("Debe proporcionar al menos un campo para actualizar"));
     }
 }

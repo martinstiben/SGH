@@ -72,23 +72,23 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register(any(), any())).thenReturn("Usuario registrado correctamente");
+        when(authService.register(any(String.class), any(String.class), any(String.class), any(Role.class))).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register(any(), any()))
+        when(authService.register(any(String.class), any(String.class), any(String.class), any(Role.class)))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
+                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -110,7 +110,11 @@ public class AuthControllerTest {
 
     @Test
     public void testGetProfile() throws Exception {
-        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "Juan Pérez", "test@example.com", "password");
+        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users();
+        user.setUserId(1);
+        user.setName("Juan Pérez");
+        user.setEmail("test@example.com");
+        user.setPassword("password");
         user.setRole(Role.MAESTRO);
         when(authService.getProfile()).thenReturn(user);
 

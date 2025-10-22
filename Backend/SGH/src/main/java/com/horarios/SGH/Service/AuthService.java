@@ -24,50 +24,31 @@ import com.horarios.SGH.jwt.JwtTokenProvider;
 public class AuthService {
 
     private final Iusers repo;
-    private final Iteachers teacherRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final FileStorageService fileStorageService;
 
     public AuthService(Iusers repo,
-                        Iteachers teacherRepo,
                         PasswordEncoder encoder,
                         AuthenticationManager authManager,
-                        JwtTokenProvider jwtTokenProvider,
-                        FileStorageService fileStorageService) {
+                        JwtTokenProvider jwtTokenProvider) {
         this.repo = repo;
-        this.teacherRepo = teacherRepo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.fileStorageService = fileStorageService;
     }
 
-    public String register(RegisterRequestDTO request, MultipartFile photo) {
-        String username = request.getUsername();
-        String rawPassword = request.getPassword();
-        Role role = request.getRole();
-        String teacherName = request.getTeacherName();
-
-        if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
+    public String register(String name, String email, String rawPassword, Role role) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
         }
 
-        if (username.contains(" ")) {
-            throw new IllegalArgumentException("El nombre de usuario no puede contener espacios");
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("El correo electrónico no puede estar vacío");
         }
 
-        if (!username.equals(username.toLowerCase())) {
-            throw new IllegalArgumentException("El nombre de usuario no puede contener letras mayúsculas");
-        }
-
-        if (username.matches(".*\\d.*")) {
-            throw new IllegalArgumentException("El nombre de usuario no puede contener números");
-        }
-
-        if (username.length() > 100) {
-            throw new IllegalArgumentException("El nombre de usuario no puede exceder los 100 caracteres");
+        if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+            throw new IllegalArgumentException("El correo electrónico debe tener un formato válido");
         }
 
         if (rawPassword == null || rawPassword.trim().isEmpty()) {
@@ -78,49 +59,85 @@ public class AuthService {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
 
-        // teacherName ya no es requerido en el registro, será opcional después
-
-        repo.findByUserName(username).ifPresent(u -> {
-            throw new IllegalStateException("El nombre de usuario ya está en uso");
+        repo.findByUserName(email).ifPresent(u -> {
+            throw new IllegalStateException("El correo electrónico ya está en uso");
         });
 
         users u = new users();
-        u.setUserName(username);
+        u.setName(name);
+        u.setEmail(email);
         u.setPassword(encoder.encode(rawPassword));
         u.setRole(role);
         users savedUser = repo.save(u);
-
-        // Si es profesor, crear registro en teachers (sin foto inicialmente)
-        if (role == Role.MAESTRO) {
-            teachers teacher = new teachers();
-            teacher.setTeacherName(teacherName != null ? teacherName : "Profesor"); // Nombre por defecto si no se proporciona
-            teacherRepo.save(teacher);
-        }
 
         return "Usuario registrado correctamente";
     }
 
 
-    public LoginResponseDTO login(LoginRequestDTO req) {
+    public String initiateLogin(LoginRequestDTO req) {
+        // Verificar credenciales
         authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
+            new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
         );
 
-        String token = jwtTokenProvider.generateToken(req.getUsername());
+        // Generar código de verificación
+        String verificationCode = generateVerificationCode();
+
+        // Guardar código en la base de datos con expiración
+        users user = repo.findByUserName(req.getEmail()).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setVerificationCode(verificationCode);
+        user.setCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10)); // Expira en 10 minutos
+        repo.save(user);
+
+        // Enviar email con el código (simulado por ahora)
+        sendVerificationEmail(user.getUserName(), verificationCode);
+
+        return "Código de verificación enviado al correo electrónico";
+    }
+
+    public LoginResponseDTO verifyCode(String email, String code) {
+        users user = repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(code)) {
+            throw new RuntimeException("Código de verificación inválido");
+        }
+
+        if (user.getCodeExpiration().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Código de verificación expirado");
+        }
+
+        // Limpiar código después de uso exitoso
+        user.setVerificationCode(null);
+        user.setCodeExpiration(null);
+        repo.save(user);
+
+        // Generar token JWT
+        String token = jwtTokenProvider.generateToken(email);
         return new LoginResponseDTO(token);
+    }
+
+    private String generateVerificationCode() {
+        java.util.Random random = new java.util.Random();
+        int code = 100000 + random.nextInt(900000); // Código de 6 dígitos
+        return String.valueOf(code);
+    }
+
+    private void sendVerificationEmail(String email, String code) {
+        // Simulación de envío de email - en producción usar JavaMailSender
+        System.out.println("Código de verificación para " + email + ": " + code);
     }
 
     public users getProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        return repo.findByUserName(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        String email = authentication.getName();
+        return repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     public void updateUserName(String newName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        users user = repo.findByUserName(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        user.setUserName(newName);
+        String email = authentication.getName();
+        users user = repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setName(newName);
         repo.save(user);
     }
 }

@@ -11,14 +11,15 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   interface RegisterFormValues {
-    user: string;
+    name: string;
+    email: string;
     password: string;
     role: string;
     acceptTerms: boolean;
   }
 
-  const handleRegister = async ({ user, password, role }: RegisterFormValues) => {
-    if (!user || !password || !role) {
+  const handleRegister = async ({ name, email, password, role }: RegisterFormValues) => {
+    if (!name || !email || !password || !role) {
       setAuthError("Por favor completa todos los campos.");
       return;
     }
@@ -26,7 +27,7 @@ export default function RegisterPage() {
     try {
       setAuthError("");
       setSuccessMessage("");
-      const data = await register(user, password, role);
+      const data = await register(name, email, password, role);
 
       if (data.message) {
         setSuccessMessage("¡Registro exitoso! Redirigiendo al login...");

@@ -5,7 +5,7 @@ import { getRoles } from "@/api/services/userApi";
 
 interface RegisterFormProps {
   onBack?: () => void;
-  onSubmit?: (data: { user: string; password: string; role: string; acceptTerms: boolean }) => void;
+  onSubmit?: (data: { name: string; email: string; password: string; role: string; acceptTerms: boolean }) => void;
   authError?: string;
   successMessage?: string;
 }
@@ -34,12 +34,14 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
     fetchRoles();
   }, []);
-  const [user, setUser] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userError, setUserError] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [termsError, setTermsError] = useState("");
@@ -50,21 +52,27 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
     e.preventDefault();
 
     // Limpiar errores previos
-    setUserError("");
+    setNameError("");
+    setEmailError("");
     setPasswordError("");
     setRoleError("");
     setTermsError("");
 
     let hasError = false;
 
-    if (!user.trim()) {
-      setUserError('El nombre de usuario es obligatorio');
+    if (!name.trim()) {
+      setNameError('El nombre es obligatorio');
       hasError = true;
-    } else if (user.length > 50) {
-      setUserError('El nombre de usuario no puede exceder los 50 caracteres');
+    } else if (name.length > 100) {
+      setNameError('El nombre no puede exceder los 100 caracteres');
       hasError = true;
-    } else if (!/^[a-z]*$/.test(user)) {
-      setUserError('El nombre de usuario solo puede contener letras minúsculas');
+    }
+
+    if (!email.trim()) {
+      setEmailError('El correo electrónico es obligatorio');
+      hasError = true;
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      setEmailError('El correo electrónico debe tener un formato válido');
       hasError = true;
     }
 
@@ -98,7 +106,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
     try {
       if (onSubmit) {
-        await onSubmit({ user, password, role, acceptTerms });
+        await onSubmit({ name, email, password, role, acceptTerms });
       }
     } finally {
       setIsLoading(false);
@@ -130,7 +138,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Usuario */}
+          {/* Nombre */}
           <div className="relative">
             <User
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -138,19 +146,42 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
             />
             <input
               type="text"
-              placeholder="Usuario"
-              value={user}
+              placeholder="Nombre completo"
+              value={name}
               onChange={(e) => {
-                setUser(e.target.value);
-                if (userError) setUserError(""); // Limpiar error al escribir
+                setName(e.target.value);
+                if (nameError) setNameError(""); // Limpiar error al escribir
               }}
               className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                (userError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+                (nameError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
             />
           </div>
-          {(userError || authError) && (
-            <p className="text-red-400 text-sm mt-1">{userError || authError}</p>
+          {(nameError || authError) && (
+            <p className="text-red-400 text-sm mt-1">{nameError || authError}</p>
+          )}
+
+          {/* Email */}
+          <div className="relative">
+            <User
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(""); // Limpiar error al escribir
+              }}
+              className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                (emailError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+              }`}
+            />
+          </div>
+          {emailError && (
+            <p className="text-red-400 text-sm mt-1">{emailError}</p>
           )}
 
           {/* Contraseña */}
@@ -244,7 +275,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
           {/* Botón Registrarse */}
           <button
             type="submit"
-            disabled={isLoading || !user || !password || !role || !acceptTerms || rolesLoading}
+            disabled={isLoading || !name || !email || !password || !role || !acceptTerms || rolesLoading}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.01] disabled:scale-100 shadow-lg text-sm sm:text-base"
           >
             {isLoading ? (

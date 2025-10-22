@@ -6,32 +6,33 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "DTO para solicitud de login")
-public class LoginRequestDTO {
+@Schema(description = "DTO para verificación de código 2FA")
+public class VerifyCodeDTO {
     @NotBlank(message = "El correo electrónico no puede estar vacío")
     @Email(message = "El correo electrónico debe tener un formato válido")
     @Size(max = 100, message = "El correo electrónico no puede exceder los 100 caracteres")
     @Schema(description = "Correo electrónico del usuario", example = "usuario@example.com")
     private String email;
 
-    @NotBlank(message = "La contraseña no puede estar vacía")
-    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$", message = "La contraseña debe contener al menos una letra minúscula, una mayúscula y un número")
-    @Schema(description = "Contraseña (debe contener minúscula, mayúscula y número)", example = "Password123")
-    private String password;
+    @NotBlank(message = "El código de verificación no puede estar vacío")
+    @Pattern(regexp = "^\\d{6}$", message = "El código debe ser de 6 dígitos")
+    @Schema(description = "Código de verificación de 6 dígitos", example = "123456")
+    private String code;
 
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getCode() {
+        return code;
     }
-    public void setPassword(String password) {
-        this.password = password;
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     // Para compatibilidad, mantener getUsername que retorna email

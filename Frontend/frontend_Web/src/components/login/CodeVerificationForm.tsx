@@ -130,7 +130,7 @@ export default function CodeVerificationForm({ onBack, onSubmit, authError, succ
         )}
 
         {/* Footer */}
-        <div className="absolute bottom-3 sm:bottom-4 text-gray-400 text-xs sm:text-sm text-center w-full">
+        <div className="absolute bottom-3 sm:bottom-4 left-2 text-gray-400 text-xs sm:text-sm text-center w-full">
           Derechos reservados ©Bytestock
         </div>
       </div>

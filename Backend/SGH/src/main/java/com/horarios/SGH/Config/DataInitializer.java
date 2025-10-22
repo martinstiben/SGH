@@ -38,7 +38,7 @@ public class DataInitializer {
                 users u = new users();
                 u.setUserName(masterUsername);
                 u.setPassword(encoder.encode(masterPassword));
-                u.setRole(com.horarios.SGH.Model.Role.COORDINADOR); // Asignar rol al usuario master
+                u.setRole(com.horarios.SGH.Model.Role.MAESTRO); // Asignar rol al usuario master
                 repo.save(u);
                 System.out.println(">> Master creado: " + masterUsername);
             } else {

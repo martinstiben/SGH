@@ -34,6 +34,9 @@ public class AuthControllerTest {
     @MockBean
     private TokenRevocationService tokenRevocationService;
 
+    @MockBean
+    private com.horarios.SGH.Service.usersService usersService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -126,19 +129,25 @@ public class AuthControllerTest {
     public void testUpdateProfileSuccess() throws Exception {
         doNothing().when(authService).updateUserName("newname");
 
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"newname\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", "newname"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Nombre actualizado correctamente"));
+                .andExpect(jsonPath("$.message").value("Perfil actualizado correctamente"));
     }
 
     @Test
     public void testUpdateProfileEmptyName() throws Exception {
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", ""))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("El nombre no puede estar vacío"));
+                .andExpect(jsonPath("$.error").value("Debe proporcionar al menos un campo para actualizar"));
     }
 }

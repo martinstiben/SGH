@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.horarios.SGH.DTO.responseDTO;
 import com.horarios.SGH.Model.users;
@@ -116,6 +117,51 @@ public class usersController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new responseDTO("ERROR", "Error interno: " + e.getMessage()));
+        }
+    }
+
+    // Actualizar foto de perfil
+    @PutMapping("/{id}/photo")
+    public ResponseEntity<responseDTO> updateUserPhoto(@PathVariable int id, @RequestParam("photo") MultipartFile photo) {
+        try {
+            String result = usersService.updateUserPhoto(id, photo);
+            return ResponseEntity.ok(new responseDTO("OK", result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new responseDTO("ERROR", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new responseDTO("ERROR", "Error al actualizar foto: " + e.getMessage()));
+        }
+    }
+
+    // Eliminar foto de perfil
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<responseDTO> deleteUserPhoto(@PathVariable int id) {
+        try {
+            String result = usersService.updateUserPhoto(id, null);
+            return ResponseEntity.ok(new responseDTO("OK", result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new responseDTO("ERROR", "Error al eliminar foto: " + e.getMessage()));
+        }
+    }
+
+    // Obtener foto de perfil
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<byte[]> getUserPhoto(@PathVariable int id) {
+        try {
+            Optional<com.horarios.SGH.DTO.usersDTO> userOpt = usersService.getUserWithPhoto(id);
+            if (!userOpt.isPresent() || userOpt.get().getPhotoData() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            com.horarios.SGH.DTO.usersDTO user = userOpt.get();
+            return ResponseEntity.ok()
+                    .header("Content-Type", user.getPhotoContentType() != null ? user.getPhotoContentType() : "image/jpeg")
+                    .header("Content-Disposition", "inline; filename=\"" + (user.getPhotoFileName() != null ? user.getPhotoFileName() : "photo.jpg") + "\"")
+                    .body(user.getPhotoData());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

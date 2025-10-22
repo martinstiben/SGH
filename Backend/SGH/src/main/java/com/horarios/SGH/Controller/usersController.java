@@ -45,56 +45,7 @@ public class usersController {
         }
     }
 
-    // Login
-    @PostMapping("/login")
-    public ResponseEntity<responseDTO> login(@RequestParam String userName, @RequestParam String password) {
-        try {
-
-            // Validación de campos
-            if (userName == null || userName.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new responseDTO("ERROR", "El nombre de usuario no puede estar vacío"));
-            }
-
-            if (userName.contains(" ")) {
-                return ResponseEntity.badRequest().body(new responseDTO("ERROR", "El nombre de usuario no puede contener espacios"));
-            }
-
-            // Validación que el nombre de usuario no tenga Mayusculas
-            if (!userName.equals(userName.toLowerCase())) {
-                return ResponseEntity.badRequest().body(new responseDTO("ERROR", "El nombre de usuario no puede contener letras mayúsculas"));
-            }
-
-            // Validación que el nombre de usuario no tenga números
-            if (userName.matches(".*\\d.*")) {
-                return ResponseEntity.badRequest().body(new responseDTO("ERROR", "El nombre de usuario no puede contener números"));
-            }
-            
-            // Validación de longitud del nombre de usuario
-            if (userName.length() > 100) {
-                return ResponseEntity.badRequest().body(new responseDTO("ERROR", "El nombre de usuario no puede exceder los 100 caracteres"));
-            }
-
-            // Validación de contraseña
-            if (password == null || password.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new responseDTO("ERROR", "La contraseña no puede estar vacía"));
-            }
-
-            // Consulta en base de datos
-            Optional<users> usuario = usersRepository.findByUserName(userName);
-            if (!usuario.isPresent() || !usuario.get().getUserName().equals(userName)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new responseDTO("ERROR", "Usuario no encontrado"));
-            }
-
-            // Lógica de autenticación
-            String resultMessage = usersService.login(userName, password);
-            return ResponseEntity.ok(new responseDTO("OK", resultMessage));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new responseDTO("ERROR", e.getMessage()));
-        }
-    }
+    // Login endpoint removido - ahora se maneja en AuthController con 2FA
 
     // Eliminar usuario (excepto master)
     @DeleteMapping("/{username}")

@@ -1,25 +1,27 @@
 package com.horarios.SGH.Service;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.horarios.SGH.Model.Role;
-import com.horarios.SGH.Model.teachers;
 import com.horarios.SGH.Model.users;
-import com.horarios.SGH.Repository.Iteachers;
 import com.horarios.SGH.Repository.Iusers;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
-import com.horarios.SGH.DTO.RegisterRequestDTO;
 import com.horarios.SGH.jwt.JwtTokenProvider;
 
 
+/**
+ * Servicio de autenticación para el sistema SGH.
+ * Maneja registro de usuarios, login con 2FA y gestión de tokens JWT.
+ */
 @Service
 public class AuthService {
 
@@ -27,6 +29,9 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     public AuthService(Iusers repo,
                         PasswordEncoder encoder,
@@ -39,92 +44,146 @@ public class AuthService {
     }
 
     public String register(String name, String email, String rawPassword, Role role) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
-        }
-
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("El correo electrónico no puede estar vacío");
-        }
-
-        if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-            throw new IllegalArgumentException("El correo electrónico debe tener un formato válido");
-        }
-
-        if (rawPassword == null || rawPassword.trim().isEmpty()) {
-            throw new IllegalArgumentException("La contraseña no puede estar vacía");
-        }
+        // Validar entradas usando ValidationUtils
+        ValidationUtils.validateName(name);
+        ValidationUtils.validateEmail(email);
+        ValidationUtils.validatePassword(rawPassword);
 
         if (role == null) {
             throw new IllegalArgumentException("El rol no puede ser nulo");
         }
 
+        // Verificar que el email no esté en uso
         repo.findByUserName(email).ifPresent(u -> {
             throw new IllegalStateException("El correo electrónico ya está en uso");
         });
 
-        users u = new users();
-        u.setName(name);
-        u.setEmail(email);
-        u.setPassword(encoder.encode(rawPassword));
-        u.setRole(role);
-        users savedUser = repo.save(u);
+        // Crear y guardar el nuevo usuario
+        users newUser = new users();
+        newUser.setName(name.trim());
+        newUser.setEmail(email.trim().toLowerCase());
+        newUser.setPassword(encoder.encode(rawPassword));
+        newUser.setRole(role);
+
+        repo.save(newUser);
 
         return "Usuario registrado correctamente";
     }
 
 
+    /**
+     * Inicia el proceso de login verificando credenciales y enviando código 2FA.
+     *
+     * @param req DTO con email y contraseña
+     * @return Mensaje de confirmación
+     */
     public String initiateLogin(LoginRequestDTO req) {
-        // Verificar credenciales
+        // Validar entrada
+        ValidationUtils.validateEmail(req.getEmail());
+        ValidationUtils.validatePassword(req.getPassword());
+
+        // Verificar credenciales con Spring Security
         authManager.authenticate(
             new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
         );
 
-        // Generar código de verificación
+        // Generar y guardar código de verificación
         String verificationCode = generateVerificationCode();
+        users user = repo.findByUserName(req.getEmail())
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Guardar código en la base de datos con expiración
-        users user = repo.findByUserName(req.getEmail()).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setVerificationCode(verificationCode);
-        user.setCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10)); // Expira en 10 minutos
+        user.setCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10));
         repo.save(user);
 
-        // Enviar email con el código (simulado por ahora)
+        // Enviar código por email (simulado)
         sendVerificationEmail(user.getUserName(), verificationCode);
 
         return "Código de verificación enviado al correo electrónico";
     }
 
+    /**
+     * Verifica el código 2FA y genera token JWT si es válido.
+     *
+     * @param email Email del usuario
+     * @param code Código de verificación
+     * @return DTO con token JWT
+     */
     public LoginResponseDTO verifyCode(String email, String code) {
-        users user = repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        // Validar entrada
+        ValidationUtils.validateEmail(email);
+        if (code == null || code.trim().isEmpty()) {
+            throw new IllegalArgumentException("El código de verificación es obligatorio");
+        }
 
-        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(code)) {
+        // Buscar usuario
+        users user = repo.findByUserName(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Validar código
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(code.trim())) {
             throw new RuntimeException("Código de verificación inválido");
         }
 
+        // Verificar expiración
         if (user.getCodeExpiration().isBefore(java.time.LocalDateTime.now())) {
             throw new RuntimeException("Código de verificación expirado");
         }
 
-        // Limpiar código después de uso exitoso
+        // Limpiar código usado y generar token
         user.setVerificationCode(null);
         user.setCodeExpiration(null);
         repo.save(user);
 
-        // Generar token JWT
         String token = jwtTokenProvider.generateToken(email);
         return new LoginResponseDTO(token);
     }
 
+    /**
+     * Genera un código de verificación de 6 dígitos.
+     *
+     * @return Código de verificación como String
+     */
     private String generateVerificationCode() {
         java.util.Random random = new java.util.Random();
         int code = 100000 + random.nextInt(900000); // Código de 6 dígitos
         return String.valueOf(code);
     }
 
+    /**
+     * Envía el código de verificación por email usando JavaMailSender.
+     *
+     * @param email Dirección de email del destinatario
+     * @param code Código de verificación
+     */
     private void sendVerificationEmail(String email, String code) {
-        // Simulación de envío de email - en producción usar JavaMailSender
-        System.out.println("Código de verificación para " + email + ": " + code);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Código de Verificación - SGH");
+            message.setText("Hola,\n\n" +
+                          "Tu código de verificación para SGH es: " + code + "\n\n" +
+                          "Este código expira en 10 minutos.\n\n" +
+                          "Si no solicitaste este código, ignora este mensaje.\n\n" +
+                          "Saludos,\n" +
+                          "Equipo SGH");
+
+            mailSender.send(message);
+
+            System.out.println("=== EMAIL ENVIADO ===");
+            System.out.println("Destinatario: " + email);
+            System.out.println("Código: " + code);
+            System.out.println("====================");
+
+        } catch (Exception e) {
+            System.err.println("Error enviando email: " + e.getMessage());
+            // Fallback: mostrar en consola si falla el email
+            System.out.println("=== CÓDIGO DE VERIFICACIÓN SGH (FALLBACK) ===");
+            System.out.println("Email: " + email);
+            System.out.println("Código: " + code);
+            System.out.println("Este código expira en 10 minutos");
+            System.out.println("===========================================");
+        }
     }
 
     public users getProfile() {

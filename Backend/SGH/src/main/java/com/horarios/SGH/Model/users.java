@@ -42,6 +42,16 @@ public class users {
     @Column(name = "code_expiration")
         private java.time.LocalDateTime codeExpiration;
 
+    @Column(name = "photoData")
+    @Lob
+    private byte[] photoData;
+
+    @Column(name = "photoContentType", length = 100)
+    private String photoContentType;
+
+    @Column(name = "photoFileName", length = 255)
+    private String photoFileName;
+
     public users(int userId, String name, String email, String password) {
         this.userId = userId;
         this.name = name;

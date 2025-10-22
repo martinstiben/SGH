@@ -33,6 +33,9 @@ public class AuthControllerTest {
     @MockBean
     private TokenRevocationService tokenRevocationService;
 
+    @MockBean
+    private com.horarios.SGH.Service.usersService usersService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -69,23 +72,23 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register("Juan Pérez", "test@example.com", "password", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
+        when(authService.register(any(), any())).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario registrado correctamente"));
     }
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register("Juan Pérez", "test@example.com", "password", Role.MAESTRO))
+        when(authService.register(any(), any()))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Juan Pérez\",\"email\":\"test@example.com\",\"password\":\"password\",\"role\":\"MAESTRO\"}"))
+                .content("{\"username\":\"testuser\",\"password\":\"password\",\"role\":\"MAESTRO\",\"teacherName\":\"Juan Pérez\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -121,19 +124,25 @@ public class AuthControllerTest {
     public void testUpdateProfileSuccess() throws Exception {
         doNothing().when(authService).updateUserName("newname");
 
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"newname\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", "newname"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Nombre actualizado correctamente"));
+                .andExpect(jsonPath("$.message").value("Perfil actualizado correctamente"));
     }
 
     @Test
     public void testUpdateProfileEmptyName() throws Exception {
-        mockMvc.perform(put("/auth/profile")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\"}"))
+        mockMvc.perform(multipart("/auth/profile")
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .param("name", ""))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("El nombre no puede estar vacío"));
+                .andExpect(jsonPath("$.error").value("Debe proporcionar al menos un campo para actualizar"));
     }
 }

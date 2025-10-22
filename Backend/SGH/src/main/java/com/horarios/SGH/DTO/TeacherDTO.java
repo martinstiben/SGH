@@ -18,6 +18,11 @@ public class TeacherDTO {
     // Información de disponibilidad
     private String availabilitySummary;
 
+    // Información de foto
+    private byte[] photoData;
+    private String photoContentType;
+    private String photoFileName;
+
     public TeacherDTO() {}
 
     public TeacherDTO(String teacherName) {
@@ -57,5 +62,29 @@ public class TeacherDTO {
 
     public void setAvailabilitySummary(String availabilitySummary) {
         this.availabilitySummary = availabilitySummary;
+    }
+
+    public byte[] getPhotoData() {
+        return photoData;
+    }
+
+    public void setPhotoData(byte[] photoData) {
+        this.photoData = photoData;
+    }
+
+    public String getPhotoContentType() {
+        return photoContentType;
+    }
+
+    public void setPhotoContentType(String photoContentType) {
+        this.photoContentType = photoContentType;
+    }
+
+    public String getPhotoFileName() {
+        return photoFileName;
+    }
+
+    public void setPhotoFileName(String photoFileName) {
+        this.photoFileName = photoFileName;
     }
 }

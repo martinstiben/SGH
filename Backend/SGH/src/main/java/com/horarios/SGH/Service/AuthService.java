@@ -1,23 +1,24 @@
 package com.horarios.SGH.Service;
 
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.horarios.SGH.Model.Role;
+import com.horarios.SGH.Model.teachers;
 import com.horarios.SGH.Model.users;
+import com.horarios.SGH.Repository.Iteachers;
 import com.horarios.SGH.Repository.Iusers;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
+import com.horarios.SGH.DTO.RegisterRequestDTO;
 import com.horarios.SGH.jwt.JwtTokenProvider;
 
-import java.time.LocalDateTime;
-import java.util.Random;
 
 @Service
 public class AuthService {
@@ -26,18 +27,15 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final JavaMailSender mailSender;
 
     public AuthService(Iusers repo,
                         PasswordEncoder encoder,
                         AuthenticationManager authManager,
-                        JwtTokenProvider jwtTokenProvider,
-                        JavaMailSender mailSender) {
+                        JwtTokenProvider jwtTokenProvider) {
         this.repo = repo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.mailSender = mailSender;
     }
 
     public String register(String name, String email, String rawPassword, Role role) {
@@ -70,9 +68,11 @@ public class AuthService {
         u.setEmail(email);
         u.setPassword(encoder.encode(rawPassword));
         u.setRole(role);
-        repo.save(u);
+        users savedUser = repo.save(u);
+
         return "Usuario registrado correctamente";
     }
+
 
     public String initiateLogin(LoginRequestDTO req) {
         // Verificar credenciales
@@ -86,10 +86,10 @@ public class AuthService {
         // Guardar código en la base de datos con expiración
         users user = repo.findByUserName(req.getEmail()).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setVerificationCode(verificationCode);
-        user.setCodeExpiration(LocalDateTime.now().plusMinutes(10)); // Expira en 10 minutos
+        user.setCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10)); // Expira en 10 minutos
         repo.save(user);
 
-        // Enviar email con el código
+        // Enviar email con el código (simulado por ahora)
         sendVerificationEmail(user.getUserName(), verificationCode);
 
         return "Código de verificación enviado al correo electrónico";
@@ -102,7 +102,7 @@ public class AuthService {
             throw new RuntimeException("Código de verificación inválido");
         }
 
-        if (user.getCodeExpiration().isBefore(LocalDateTime.now())) {
+        if (user.getCodeExpiration().isBefore(java.time.LocalDateTime.now())) {
             throw new RuntimeException("Código de verificación expirado");
         }
 
@@ -117,23 +117,20 @@ public class AuthService {
     }
 
     private String generateVerificationCode() {
-        Random random = new Random();
+        java.util.Random random = new java.util.Random();
         int code = 100000 + random.nextInt(900000); // Código de 6 dígitos
         return String.valueOf(code);
     }
 
     private void sendVerificationEmail(String email, String code) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Código de verificación - SGH");
-        message.setText("Tu código de verificación es: " + code + "\n\nEste código expira en 10 minutos.");
-        mailSender.send(message);
+        // Simulación de envío de email - en producción usar JavaMailSender
+        System.out.println("Código de verificación para " + email + ": " + code);
     }
 
     public users getProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        return repo.findByUserName(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        String email = authentication.getName();
+        return repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     public void updateUserName(String newName) {

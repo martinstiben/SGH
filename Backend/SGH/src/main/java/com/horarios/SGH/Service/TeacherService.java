@@ -13,6 +13,7 @@ import com.horarios.SGH.Repository.Iteachers;
 import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class TeacherService {
     private final TeacherSubjectRepository teacherSubjectRepo;
     private final ITeacherAvailabilityRepository availabilityRepo;
     private final IScheduleRepository scheduleRepo;
+    private final FileStorageService fileStorageService;
 
     /**
      * Crea un docente. Si se envía subjectId, crea también la relación TeacherSubject.
@@ -55,6 +57,9 @@ public class TeacherService {
             TeacherDTO dto = new TeacherDTO();
             dto.setTeacherId(t.getId());
             dto.setTeacherName(t.getTeacherName());
+            dto.setPhotoData(t.getPhotoData());
+            dto.setPhotoContentType(t.getPhotoContentType());
+            dto.setPhotoFileName(t.getPhotoFileName());
 
             // Compatibilidad: si existe relación TeacherSubject, usamos el primer subjectId
             List<TeacherSubject> tsList = teacherSubjectRepo.findByTeacher_Id(t.getId());
@@ -88,6 +93,9 @@ public class TeacherService {
             TeacherDTO dto = new TeacherDTO();
             dto.setTeacherId(t.getId());
             dto.setTeacherName(t.getTeacherName());
+            dto.setPhotoData(t.getPhotoData());
+            dto.setPhotoContentType(t.getPhotoContentType());
+            dto.setPhotoFileName(t.getPhotoFileName());
 
             List<TeacherSubject> tsList = teacherSubjectRepo.findByTeacher_Id(t.getId());
             if (!tsList.isEmpty()) {
@@ -189,6 +197,39 @@ public class TeacherService {
         TeacherDTO createdTeacher = create(dto);
 
         return createdTeacher;
+    }
+
+    /**
+     * Actualiza la foto de perfil de un profesor.
+     * @param teacherId ID del profesor
+     * @param photo Archivo de imagen para la foto de perfil
+     * @return Mensaje de confirmación
+     */
+    public String updateTeacherPhoto(int teacherId, MultipartFile photo) {
+        try {
+            teachers teacher = teacherRepo.findById(teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Profesor no encontrado"));
+
+            if (photo != null && !photo.isEmpty()) {
+                FileStorageService.PhotoData photoData = fileStorageService.processImageFile(photo);
+                teacher.setPhotoData(photoData.getData());
+                teacher.setPhotoContentType(photoData.getContentType());
+                teacher.setPhotoFileName(photoData.getFileName());
+            } else {
+                // Si photo es null o vacío, eliminar foto existente
+                teacher.setPhotoData(null);
+                teacher.setPhotoContentType(null);
+                teacher.setPhotoFileName(null);
+            }
+
+            teacherRepo.save(teacher);
+            return "Foto de perfil actualizada correctamente";
+
+        } catch (IllegalArgumentException e) {
+            throw e; // Re-lanzar excepciones de validación
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar la foto de perfil: " + e.getMessage(), e);
+        }
     }
 
 }

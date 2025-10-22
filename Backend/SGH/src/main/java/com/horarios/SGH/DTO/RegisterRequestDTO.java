@@ -9,11 +9,15 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "DTO para solicitud de registro de usuario")
 public class RegisterRequestDTO {
-    @NotBlank(message = "El nombre de usuario no puede estar vacío")
-    @Size(max = 100, message = "El nombre de usuario no puede exceder los 100 caracteres")
-    @Pattern(regexp = "^[a-z]*$", message = "El nombre de usuario solo puede contener letras minúsculas")
-    @Schema(description = "Nombre de usuario (solo letras minúsculas)", example = "usuarioejemplo", required = true)
-    private String username;
+    @NotBlank(message = "El nombre no puede estar vacío")
+    @Size(max = 100, message = "El nombre no puede exceder los 100 caracteres")
+    @Schema(description = "Nombre completo del usuario", example = "Juan Pérez", required = true)
+    private String name;
+
+    @NotBlank(message = "El correo electrónico no puede estar vacío")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "El correo electrónico debe tener un formato válido")
+    @Schema(description = "Correo electrónico del usuario", example = "usuario@ejemplo.com", required = true)
+    private String email;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
@@ -31,8 +35,11 @@ public class RegisterRequestDTO {
     @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "ESTUDIANTE"})
     private Role role;
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }

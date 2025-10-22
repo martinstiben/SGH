@@ -3,12 +3,17 @@ package com.horarios.SGH.Service;
 import com.horarios.SGH.Model.users;
 import com.horarios.SGH.Repository.Iusers;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
+/**
+ * Servicio personalizado para cargar detalles de usuario para autenticación.
+ * Maneja la carga de usuarios desde la base de datos y proporciona un usuario master como fallback.
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -21,29 +26,36 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final Iusers userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomUserDetailsService(Iusers userRepository,
-                                    PasswordEncoder passwordEncoder) {
+    public CustomUserDetailsService(Iusers userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Carga un usuario por su nombre de usuario (email).
+     * Primero intenta cargar desde la base de datos, luego usa el usuario master como fallback.
+     *
+     * @param username El nombre de usuario (email) a buscar
+     * @return UserDetails del usuario encontrado
+     * @throws UsernameNotFoundException si el usuario no existe
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        // 1) Intentar cargar desde BD
-        users u = userRepository.findByUserName(username).orElse(null);
-        if (u != null) {
-            // Verificar que el nombre de usuario coincida exactamente (case-sensitive)
-            if (!u.getUserName().equals(username)) {
+        // Intentar cargar desde base de datos
+        users user = userRepository.findByUserName(username).orElse(null);
+        if (user != null) {
+            // Verificar que el email coincida exactamente
+            if (!user.getUserName().equals(username)) {
                 throw new UsernameNotFoundException("Usuario no encontrado: " + username);
             }
-            return User.withUsername(u.getUserName())
-                    .password(u.getPassword()) // BCrypt en BD
-                    .roles(u.getRole().name()) // asignar rol del usuario
+
+            return User.withUsername(user.getUserName())
+                    .password(user.getPassword())
+                    .roles(user.getRole().name())
                     .build();
         }
 
-        // 2) Fallback local para "master" SOLO si no existe en BD
+        // Fallback para usuario master solo si no existe en BD
         if (masterUsername.equals(username)) {
             return User.withUsername(masterUsername)
                     .password(passwordEncoder.encode(masterPassword))

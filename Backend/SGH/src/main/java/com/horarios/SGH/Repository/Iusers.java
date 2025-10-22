@@ -13,4 +13,13 @@ public interface Iusers extends JpaRepository<users, Integer> {
     boolean existsByEmail(String email);
     long count();
     List<users> findByRole(Role role);
+
+    // Para compatibilidad con autenticación
+    default Optional<users> findByUserName(String userName) {
+        return findByEmail(userName);
+    }
+
+    default boolean existsByUserName(String userName) {
+        return existsByEmail(userName);
+    }
 }

@@ -4,7 +4,7 @@ import { log } from "../../utils/logger";
 
 const API_URL = `${API_BASE_URL}/auth`;
 
-export const login = async (username: string, password: string) => {
+export const initiateLogin = async (email: string, password: string) => {
   try {
     const response = await fetch(`${API_URL}/login`, {
       method: "POST",
@@ -12,7 +12,7 @@ export const login = async (username: string, password: string) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username,
+        email,
         password,
       }),
     });
@@ -25,7 +25,33 @@ export const login = async (username: string, password: string) => {
     const data = await response.json();
     return data;
   } catch (error: any) {
-    log.error("Error en login", error, { username });
+    log.error("Error en login", error, { email });
+    throw error;
+  }
+};
+
+export const verifyCode = async (email: string, code: string) => {
+  try {
+    const response = await fetch(`${API_URL}/verify-code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        code,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `Error ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    log.error("Error en verificación de código", error, { email });
     throw error;
   }
 };
@@ -58,7 +84,8 @@ export const register = async (username: string, password: string, email: string
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username,
+        name,
+        email,
         password,
         email,
         role,

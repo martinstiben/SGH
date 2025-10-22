@@ -60,14 +60,19 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
     let hasError = false;
 
-    if (!user.trim()) {
-      setUserError('El nombre de usuario es obligatorio');
+    if (!name.trim()) {
+      setNameError('El nombre es obligatorio');
       hasError = true;
-    } else if (user.length > 50) {
-      setUserError('El nombre de usuario no puede exceder los 50 caracteres');
+    } else if (name.length > 100) {
+      setNameError('El nombre no puede exceder los 100 caracteres');
       hasError = true;
-    } else if (!/^[a-z]*$/.test(user)) {
-      setUserError('El nombre de usuario solo puede contener letras minúsculas');
+    }
+
+    if (!email.trim()) {
+      setEmailError('El correo electrónico es obligatorio');
+      hasError = true;
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      setEmailError('El correo electrónico debe tener un formato válido');
       hasError = true;
     }
 
@@ -141,7 +146,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Usuario */}
+          {/* Nombre */}
           <div className="relative">
             <User
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -149,19 +154,42 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
             />
             <input
               type="text"
-              placeholder="Usuario"
-              value={user}
+              placeholder="Nombre completo"
+              value={name}
               onChange={(e) => {
-                setUser(e.target.value);
-                if (userError) setUserError(""); // Limpiar error al escribir
+                setName(e.target.value);
+                if (nameError) setNameError(""); // Limpiar error al escribir
               }}
               className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                (userError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+                (nameError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
             />
           </div>
-          {(userError || authError) && (
-            <p className="text-red-400 text-sm mt-1">{userError || authError}</p>
+          {(nameError || authError) && (
+            <p className="text-red-400 text-sm mt-1">{nameError || authError}</p>
+          )}
+
+          {/* Email */}
+          <div className="relative">
+            <User
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(""); // Limpiar error al escribir
+              }}
+              className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                (emailError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
+              }`}
+            />
+          </div>
+          {emailError && (
+            <p className="text-red-400 text-sm mt-1">{emailError}</p>
           )}
 
           {/* Email */}

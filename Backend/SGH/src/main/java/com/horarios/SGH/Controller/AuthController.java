@@ -3,6 +3,7 @@ package com.horarios.SGH.Controller;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.DTO.RegisterRequestDTO;
+import com.horarios.SGH.DTO.VerifyCodeDTO;
 import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Service.AuthService;
 import com.horarios.SGH.Service.TokenRevocationService;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
@@ -27,26 +29,43 @@ public class AuthController {
 
     private final AuthService service;
     private final TokenRevocationService tokenRevocationService;
+    private final com.horarios.SGH.Service.usersService usersService;
 
-    public AuthController(AuthService service, TokenRevocationService tokenRevocationService) {
+    public AuthController(AuthService service, TokenRevocationService tokenRevocationService, com.horarios.SGH.Service.usersService usersService) {
         this.service = service;
         this.tokenRevocationService = tokenRevocationService;
+        this.usersService = usersService;
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión", description = "Autentica a un usuario y devuelve un token JWT")
+    @Operation(summary = "Iniciar sesión (Paso 1)", description = "Verifica credenciales con email y contraseña, y envía código de verificación al email")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Login exitoso",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = LoginResponseDTO.class))),
+        @ApiResponse(responseCode = "200", description = "Código enviado exitosamente"),
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request) {
         try {
-            LoginResponseDTO resp = service.login(request);
-            return ResponseEntity.ok(resp);
+            String message = service.initiateLogin(request);
+            return ResponseEntity.ok(Map.of("message", message));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Credenciales inválidas"));
+        }
+    }
+
+    @PostMapping("/verify-code")
+    @Operation(summary = "Verificar código (Paso 2)", description = "Verifica el código de 2FA enviado al email y devuelve token JWT")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Verificación exitosa",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = LoginResponseDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Código inválido o expirado")
+    })
+    public ResponseEntity<?> verifyCode(@Valid @RequestBody VerifyCodeDTO request) {
+        try {
+            LoginResponseDTO resp = service.verifyCode(request.getEmail(), request.getCode());
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -62,6 +81,8 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno del servidor"));
         }
     }
 
@@ -84,25 +105,41 @@ public class AuthController {
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("name", user.getUserName()));
+            return ResponseEntity.ok(Map.of("name", user.getName(), "email", user.getEmail()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }
     }
 
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> request) {
+    @PutMapping(value = "/profile", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> updateProfile(
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
         try {
-            String name = request.get("name");
-            if (name == null || name.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "El nombre no puede estar vacío"));
+            // Validar que al menos un campo esté presente
+            if ((name == null || name.trim().isEmpty()) && (photo == null || photo.isEmpty())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Debe proporcionar al menos un campo para actualizar"));
             }
-            service.updateUserName(name);
-            return ResponseEntity.ok(Map.of("message", "Nombre actualizado correctamente"));
+
+            // Actualizar nombre si se proporcionó
+            if (name != null && !name.trim().isEmpty()) {
+                service.updateUserName(name);
+            }
+
+            // Actualizar foto si se proporcionó
+            if (photo != null && !photo.isEmpty()) {
+                var user = service.getProfile();
+                usersService.updateUserPhoto(user.getUserId(), photo);
+            }
+
+            return ResponseEntity.ok(Map.of("message", "Perfil actualizado correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error actualizando nombre"));
+            return ResponseEntity.status(500).body(Map.of("error", "Error actualizando perfil"));
         }
     }
+
 
     @GetMapping("/roles")
     @Operation(summary = "Obtener roles disponibles", description = "Devuelve la lista de roles disponibles para registro")

@@ -1,6 +1,7 @@
 package com.horarios.SGH.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -19,17 +20,22 @@ public class LoginRequestDTO {
     @Schema(description = "Contraseña (debe contener minúscula, mayúscula y número)", example = "Password123")
     private String password;
 
-    public String getUsername() { 
-        return username; 
+    public String getEmail() {
+        return email;
     }
-    public void setUsername(String username) { 
-        this.username = username; 
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getPassword() { 
-        return password; 
+    public String getPassword() {
+        return password;
     }
-    public void setPassword(String password) { 
-        this.password = password; 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    // Para compatibilidad, mantener getUsername que retorna email
+    public String getUsername() {
+        return email;
     }
 }

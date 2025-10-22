@@ -58,7 +58,7 @@ public class AuthController {
     })
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
         try {
-            String msg = service.register(request.getUsername(), request.getPassword(), request.getRole());
+            String msg = service.register(request.getUsername(), request.getPassword(), request.getEmail(), request.getRole());
             return ResponseEntity.ok(Map.of("message", msg));
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));

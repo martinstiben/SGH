@@ -71,7 +71,7 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterSuccess() throws Exception {
-        when(authService.register("testuser", "password", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
+        when(authService.register("testuser", "password", "test@example.com", Role.MAESTRO)).thenReturn("Usuario registrado correctamente");
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -82,7 +82,7 @@ public class AuthControllerTest {
 
     @Test
     public void testRegisterFailure() throws Exception {
-        when(authService.register("testuser", "password", Role.MAESTRO))
+        when(authService.register("testuser", "password", "test@example.com", Role.MAESTRO))
                 .thenThrow(new IllegalStateException("Usuario ya existe"));
 
         mockMvc.perform(post("/auth/register")
@@ -109,7 +109,7 @@ public class AuthControllerTest {
 
     @Test
     public void testGetProfile() throws Exception {
-        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "testuser", "password");
+        com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users(1, "testuser", "password", "test@example.com");
         user.setRole(Role.MAESTRO);
         when(authService.getProfile()).thenReturn(user);
 

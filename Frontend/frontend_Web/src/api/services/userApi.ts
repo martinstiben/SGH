@@ -50,7 +50,7 @@ export const getUserProfile = async () => {
   }
 };
 
-export const register = async (username: string, password: string, role: string) => {
+export const register = async (username: string, password: string, email: string, role: string) => {
   try {
     const response = await fetch(`${API_URL}/register`, {
       method: "POST",
@@ -60,6 +60,7 @@ export const register = async (username: string, password: string, role: string)
       body: JSON.stringify({
         username,
         password,
+        email,
         role,
       }),
     });
@@ -72,7 +73,7 @@ export const register = async (username: string, password: string, role: string)
     const data = await response.json();
     return data;
   } catch (error: any) {
-    log.error("Error en registro", error, { username, role });
+    log.error("Error en registro", error, { username, email, role });
     throw error;
   }
 };

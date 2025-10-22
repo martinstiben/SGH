@@ -1,50 +1,35 @@
 package com.horarios.SGH.Service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 /**
- * Servicio responsable del manejo de archivos subidos.
- * Principio de responsabilidad única (SRP): Solo maneja el almacenamiento de archivos.
+ * Servicio responsable del manejo de archivos de imagen en base de datos.
+ * Principio de responsabilidad única (SRP): Solo maneja el procesamiento de imágenes.
  */
 @Service
 public class FileStorageService {
 
-    @Value("${app.upload.dir:uploads/photos}")
-    private String uploadDir;
-
     /**
-     * Guarda un archivo de imagen en el directorio configurado.
-     * @param file Archivo multipart a guardar
-     * @param username Nombre de usuario para generar el nombre del archivo
-     * @return Nombre del archivo guardado
+     * Procesa un archivo de imagen y retorna sus datos binarios.
+     * @param file Archivo multipart a procesar
+     * @return PhotoData conteniendo los datos binarios, tipo de contenido y nombre del archivo
      * @throws IllegalArgumentException Si el archivo no es válido
      * @throws RuntimeException Si ocurre un error de I/O
      */
-    public String saveImageFile(MultipartFile file, String username) {
+    public PhotoData processImageFile(MultipartFile file) {
         validateImageFile(file);
 
         try {
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            String filename = generateUniqueFilename(file, username);
-            Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            return filename;
+            PhotoData photoData = new PhotoData();
+            photoData.setData(file.getBytes());
+            photoData.setContentType(file.getContentType());
+            photoData.setFileName(file.getOriginalFilename());
+            return photoData;
         } catch (IOException e) {
-            throw new RuntimeException("Error al guardar el archivo: " + e.getMessage(), e);
+            throw new RuntimeException("Error al procesar el archivo: " + e.getMessage(), e);
         }
     }
 
@@ -68,16 +53,20 @@ public class FileStorageService {
     }
 
     /**
-     * Genera un nombre único para el archivo basado en el username y un UUID.
+     * Clase interna para encapsular los datos de la foto.
      */
-    private String generateUniqueFilename(MultipartFile file, String username) {
-        String originalFilename = file.getOriginalFilename();
-        String extension = ".jpg"; // default
+    public static class PhotoData {
+        private byte[] data;
+        private String contentType;
+        private String fileName;
 
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
+        public byte[] getData() { return data; }
+        public void setData(byte[] data) { this.data = data; }
 
-        return username + "_" + UUID.randomUUID().toString() + extension;
+        public String getContentType() { return contentType; }
+        public void setContentType(String contentType) { this.contentType = contentType; }
+
+        public String getFileName() { return fileName; }
+        public void setFileName(String fileName) { this.fileName = fileName; }
     }
 }

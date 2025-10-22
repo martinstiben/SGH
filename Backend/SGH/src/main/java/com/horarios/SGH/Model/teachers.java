@@ -19,8 +19,15 @@ public class teachers {
     @Pattern(regexp = "^[a-zA-ZÀ-ÿ\\s]+$", message = "El nombre del profesor solo puede contener letras y espacios")
     private String teacherName;
 
-    @Column(name="photoPath", length = 255)
-    private String photoPath;
+    @Column(name="photoData")
+    @Lob
+    private byte[] photoData;
+
+    @Column(name="photoContentType", length = 100)
+    private String photoContentType;
+
+    @Column(name="photoFileName", length = 255)
+    private String photoFileName;
 
     public teachers() {}
 
@@ -45,11 +52,27 @@ public class teachers {
         this.teacherName = teacherName;
     }
 
-    public String getPhotoPath() {
-        return photoPath;
+    public byte[] getPhotoData() {
+        return photoData;
     }
 
-    public void setPhotoPath(String photoPath) {
-        this.photoPath = photoPath;
+    public void setPhotoData(byte[] photoData) {
+        this.photoData = photoData;
+    }
+
+    public String getPhotoContentType() {
+        return photoContentType;
+    }
+
+    public void setPhotoContentType(String photoContentType) {
+        this.photoContentType = photoContentType;
+    }
+
+    public String getPhotoFileName() {
+        return photoFileName;
+    }
+
+    public void setPhotoFileName(String photoFileName) {
+        this.photoFileName = photoFileName;
     }
 }

@@ -161,4 +161,21 @@ public class TeacherController {
             return ResponseEntity.badRequest().body(new responseDTO("ERROR", e.getMessage()));
         }
     }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<byte[]> getTeacherPhoto(@PathVariable int id) {
+        try {
+            TeacherDTO teacher = service.getById(id);
+            if (teacher == null || teacher.getPhotoData() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", teacher.getPhotoContentType() != null ? teacher.getPhotoContentType() : "image/jpeg")
+                    .header("Content-Disposition", "inline; filename=\"" + (teacher.getPhotoFileName() != null ? teacher.getPhotoFileName() : "photo.jpg") + "\"")
+                    .body(teacher.getPhotoData());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }

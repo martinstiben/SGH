@@ -99,8 +99,10 @@ public class AuthService {
 
             // Procesar foto si se proporcionó
             if (photo != null && !photo.isEmpty()) {
-                String photoPath = fileStorageService.saveImageFile(photo, username);
-                teacher.setPhotoPath(photoPath);
+                FileStorageService.PhotoData photoData = fileStorageService.processImageFile(photo);
+                teacher.setPhotoData(photoData.getData());
+                teacher.setPhotoContentType(photoData.getContentType());
+                teacher.setPhotoFileName(photoData.getFileName());
             }
 
             teacherRepo.save(teacher);

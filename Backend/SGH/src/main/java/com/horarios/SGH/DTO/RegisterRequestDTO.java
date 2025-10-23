@@ -26,8 +26,11 @@ public class RegisterRequestDTO {
     private String password;
 
     @NotNull(message = "El rol no puede ser nulo")
-    @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "COORDINADOR", "ESTUDIANTE", "DIRECTOR_DE_AREA"})
+    @Schema(description = "Rol del usuario", example = "MAESTRO", required = true, allowableValues = {"MAESTRO", "ESTUDIANTE"})
     private Role role;
+
+    @Schema(description = "ID de la materia (requerido solo para maestros)", example = "1", required = false)
+    private Integer subjectId;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -40,4 +43,7 @@ public class RegisterRequestDTO {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public Integer getSubjectId() { return subjectId; }
+    public void setSubjectId(Integer subjectId) { this.subjectId = subjectId; }
 }

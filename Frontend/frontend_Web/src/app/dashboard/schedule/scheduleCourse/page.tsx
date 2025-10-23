@@ -8,6 +8,7 @@ import ScheduleModal from "@/components/schedule/scheduleCourse/ScheduleModal";
 import ScheduleGenerateModal from "@/components/schedule/scheduleCourse/ScheduleGenerateModal";
 import { getAllSchedules, generateSchedule, Schedule } from "@/api/services/scheduleApi";
 import { getAllCourses, Course } from "@/api/services/courseApi";
+import { getUserProfile } from "@/api/services/userApi";
 import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
 
@@ -94,6 +95,7 @@ const getScheduleForTimeAndDay = (schedules: Schedule[], time: string, day: stri
     const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [userRole, setUserRole] = useState<string>("");
     const router = useRouter();
 
   useEffect(() => {
@@ -104,6 +106,15 @@ const getScheduleForTimeAndDay = (schedules: Schedule[], time: string, day: stri
       router.push("/login");
       return;
     }
+
+    const fetchUserRole = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserRole(profile.role);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
 
     const fetchData = async () => {
       try {
@@ -119,6 +130,7 @@ const getScheduleForTimeAndDay = (schedules: Schedule[], time: string, day: stri
       }
     };
 
+    fetchUserRole();
     fetchData();
   }, []);
 
@@ -280,23 +292,66 @@ const getScheduleForTimeAndDay = (schedules: Schedule[], time: string, day: stri
       <div className="flex-1 p-6">
         <HeaderSchedule/>
 
-        <div className="my-6">
-          <SearchBar placeholder="Buscar cursos por nombre..." onSearch={handleSearch} />
-        </div>
-        {/* Tabla de Horarios */}
-        <div className="my-6">
-          {filteredCourses.map((course) => {
-            const courseSchedules = schedulesByCourse[course.courseId] || [];
-            return courseSchedules.length > 0 ? (
-              renderScheduleTable(courseSchedules, course.courseName, course.courseId.toString())
-            ) : (
-              <div key={course.courseId} className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-800">{course.courseName}</h3>
-                <p className="text-gray-500">No hay horarios asignados para este curso.</p>
+        {/* Role-based content */}
+        {userRole === "ESTUDIANTE" && (
+          <>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 my-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Visualización de Horarios:</strong> Aquí puedes ver los horarios de tus cursos asignados.
+                  </p>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            <div className="my-6">
+              <SearchBar placeholder="Buscar cursos por nombre..." onSearch={handleSearch} />
+            </div>
+
+            {/* Tabla de Horarios - Solo lectura para estudiantes */}
+            <div className="my-6">
+              {filteredCourses.map((course) => {
+                const courseSchedules = schedulesByCourse[course.courseId] || [];
+                return courseSchedules.length > 0 ? (
+                  renderScheduleTable(courseSchedules, course.courseName, course.courseId.toString())
+                ) : (
+                  <div key={course.courseId} className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800">{course.courseName}</h3>
+                    <p className="text-gray-500">No hay horarios asignados para este curso.</p>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {(userRole === "COORDINADOR" || userRole === "DIRECTOR_DE_AREA") && (
+          <>
+            <div className="my-6">
+              <SearchBar placeholder="Buscar cursos por nombre..." onSearch={handleSearch} />
+            </div>
+            {/* Tabla de Horarios con controles de edición */}
+            <div className="my-6">
+              {filteredCourses.map((course) => {
+                const courseSchedules = schedulesByCourse[course.courseId] || [];
+                return courseSchedules.length > 0 ? (
+                  renderScheduleTable(courseSchedules, course.courseName, course.courseId.toString())
+                ) : (
+                  <div key={course.courseId} className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800">{course.courseName}</h3>
+                    <p className="text-gray-500">No hay horarios asignados para este curso.</p>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
       </div>
 

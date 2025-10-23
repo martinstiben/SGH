@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, User, Lock, Users } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Users, BookOpen } from "lucide-react";
 import { getRoles } from "@/api/services/userApi";
+import { getAllSubjects, Subject } from "@/api/services/subjectApi";
 
 interface RegisterFormProps {
   onBack?: () => void;
-  onSubmit?: (data: { name: string; email: string; password: string; role: string; acceptTerms: boolean }) => void;
+  onSubmit?: (data: { name: string; email: string; password: string; role: string; subjectId?: number | null; acceptTerms: boolean }) => void;
   authError?: string;
   successMessage?: string;
 }
@@ -34,19 +35,42 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
     fetchRoles();
   }, []);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
   const [role, setRole] = useState("");
+  const [subjectId, setSubjectId] = useState<number | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [roleError, setRoleError] = useState("");
+  const [subjectError, setSubjectError] = useState("");
   const [termsError, setTermsError] = useState("");
   const [roles, setRoles] = useState<{ value: string; label: string }[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [rolesLoading, setRolesLoading] = useState(true);
+  const [subjectsLoading, setSubjectsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      if (role === "MAESTRO") {
+        setSubjectsLoading(true);
+        try {
+          const data = await getAllSubjects();
+          setSubjects(data);
+        } catch (error) {
+          console.error("Error cargando materias:", error);
+        } finally {
+          setSubjectsLoading(false);
+        }
+      }
+    };
+
+    fetchSubjects();
+  }, [role]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,6 +100,14 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
       hasError = true;
     }
 
+    if (!email.trim()) {
+      setEmailError('El email es obligatorio');
+      hasError = true;
+    } else if (!/^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
+      setEmailError('El email debe tener un formato válido');
+      hasError = true;
+    }
+
     if (!password) {
       setPasswordError('La contraseña es obligatoria');
       hasError = true;
@@ -95,6 +127,11 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
       hasError = true;
     }
 
+    if (role === "MAESTRO" && !subjectId) {
+      setSubjectError('Debes seleccionar una materia');
+      hasError = true;
+    }
+
     if (!acceptTerms) {
       setTermsError('Debes aceptar los términos y condiciones');
       hasError = true;
@@ -106,7 +143,7 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
     try {
       if (onSubmit) {
-        await onSubmit({ name, email, password, role, acceptTerms });
+        await onSubmit({ name, email, password, role, subjectId, acceptTerms });
       }
     } finally {
       setIsLoading(false);
@@ -163,10 +200,16 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
 
           {/* Email */}
           <div className="relative">
-            <User
+            <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
             <input
               type="email"
               placeholder="Correo electrónico"
@@ -243,6 +286,37 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
           </div>
           {roleError && (
             <p className="text-red-400 text-sm mt-1">{roleError}</p>
+          )}
+
+          {/* Materia (solo para maestros) */}
+          {role === "MAESTRO" && (
+            <div className="relative">
+              <BookOpen
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <select
+                value={subjectId || ""}
+                onChange={(e) => {
+                  setSubjectId(e.target.value ? parseInt(e.target.value) : null);
+                  if (subjectError) setSubjectError(""); // Limpiar error al seleccionar
+                }}
+                disabled={subjectsLoading}
+                className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${subjectError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'}`}
+              >
+                <option value="" disabled>
+                  {subjectsLoading ? "Cargando materias..." : "Selecciona tu materia"}
+                </option>
+                {subjects.map((subject) => (
+                  <option key={subject.subjectId} value={subject.subjectId} className="bg-gray-800 text-white">
+                    {subject.subjectName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {subjectError && (
+            <p className="text-red-400 text-sm mt-1">{subjectError}</p>
           )}
 
           {/* Términos y condiciones */}

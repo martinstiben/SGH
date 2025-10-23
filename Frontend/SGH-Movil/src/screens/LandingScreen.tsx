@@ -20,7 +20,7 @@ export default function LandingScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header
-        title="Gimnasio Americano ABC"
+        title="SGH"
         buttonLabel="Ingresar"
         onPress={handleLogin}
       />

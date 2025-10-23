@@ -21,8 +21,14 @@ type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 export default function LoginScreen() {
   const navigation = useNavigation<LoginNavProp>();
 
-  const handleLoginSuccess = () => {
-    navigation.replace('Schedules'); // 👈 ahora sí existe
+  const handleLoginSuccess = (email?: string) => {
+    if (email) {
+      // Navigate to verification screen after successful login
+      navigation.navigate('VerificationCode', { email });
+    } else {
+      // Navigate directly to schedules
+      navigation.replace('Schedules');
+    }
   };
 
   return (

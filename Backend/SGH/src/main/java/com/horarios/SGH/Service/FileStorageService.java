@@ -46,9 +46,9 @@ public class FileStorageService {
             throw new IllegalArgumentException("El archivo debe ser una imagen");
         }
 
-        // Validar tamaño máximo (5MB)
-        if (file.getSize() > 5 * 1024 * 1024) {
-            throw new IllegalArgumentException("El archivo no puede exceder los 5MB");
+        // Validar tamaño máximo (2MB)
+        if (file.getSize() > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("El archivo no puede exceder los 2MB");
         }
     }
 

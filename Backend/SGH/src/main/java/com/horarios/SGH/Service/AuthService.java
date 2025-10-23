@@ -199,4 +199,21 @@ public class AuthService {
         user.setName(newName);
         repo.save(user);
     }
+
+    public void updateUserEmail(String newEmail) {
+        ValidationUtils.validateEmail(newEmail);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        users user = repo.findByUserName(currentEmail).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que el nuevo email no esté en uso por otro usuario
+        repo.findByUserName(newEmail).ifPresent(u -> {
+            if (u.getUserId() != user.getUserId()) {
+                throw new IllegalStateException("El correo electrónico ya está en uso");
+            }
+        });
+
+        user.setEmail(newEmail.trim().toLowerCase());
+        repo.save(user);
+    }
 }

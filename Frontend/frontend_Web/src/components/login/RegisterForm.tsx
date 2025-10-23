@@ -135,9 +135,9 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
           <img
-            src="/logo.png"
-            alt="Logo"
-            className="mx-auto mb-4 w-20 h-20 sm:w-24 sm:h-24 object-contain"
+            src="/byte.png"
+            alt="Bytestock Logo"
+            className="mx-auto mb-4 w-full max-w-48 h-auto sm:max-w-56 object-contain"
           />
           <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2">
             Registro de usuario

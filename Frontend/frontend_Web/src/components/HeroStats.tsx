@@ -13,20 +13,20 @@ const HeroStats: React.FC = () => {
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-10 opacity-0 animate-fade-in delay-3">
       {[
         {
-          num: "80+",
-          text: "Niños creciendo felices",
+          num: "100%",
+          text: "Automatización en la creación de horarios",
           color: "text-yellow-500",
           bg: "bg-yellow-50",
         },
         {
-          num: "20+",
-          text: "Actividades creativas al año",
+          num: "0",
+          text: "Conflictos de horarios garantizados",
           color: "text-blue-500",
           bg: "bg-blue-50",
         },
         {
-          num: "10+",
-          text: "Profesores que enseñan con amor",
+          num: "🔔",
+          text: "Notificaciones personalizables",
           color: "text-orange-500",
           bg: "bg-orange-50",
         },

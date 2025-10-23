@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import ProfileModal from "@/components/dashboard/ProfileModal"; // Importa el modal
-import { getUserProfile } from "@/api/services/userApi";
+import { getUserProfile, getUserPhoto } from "@/api/services/userApi";
 
 export default function ProfileCard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("Cargando...");
   const [userRole, setUserRole] = useState("Cargando...");
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -15,6 +17,20 @@ export default function ProfileCard() {
         const data = await getUserProfile();
         setUserName(data.name);
         setUserRole(data.role || "Usuario");
+        setUserId(data.userId);
+
+        // Cargar foto de perfil
+        if (data.userId) {
+          try {
+            console.log("Cargando foto para usuario:", data.userId);
+            const photoUrl = await getUserPhoto(data.userId);
+            console.log("Foto cargada:", photoUrl);
+            setUserPhoto(photoUrl);
+          } catch (photoError) {
+            console.log("No hay foto de perfil o error cargando:", photoError);
+            setUserPhoto(null);
+          }
+        }
       } catch (error) {
         console.error("Error loading profile:", error);
         setUserName("Error");
@@ -39,9 +55,14 @@ export default function ProfileCard() {
         <div className="mt-2 flex flex-col items-center">
           <div className="relative w-20 h-20 rounded-full border-4 border-cyan-400 flex items-center justify-center overflow-hidden">
             <img
-              src="/logo.png"
+              src={userPhoto || "/byte.png"}
               alt="Perfil"
               className="w-full h-full object-cover rounded-full"
+              onError={(e) => {
+                console.error("Error cargando imagen en Profile:", e);
+                const target = e.target as HTMLImageElement;
+                target.src = "/byte.png";
+              }}
             />
           </div>
 

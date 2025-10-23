@@ -48,14 +48,8 @@ export default function Hero() {
       <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-white font-sans flex flex-col lg:flex-row items-center justify-between px-6 sm:px-10 lg:px-20 py-10 overflow-hidden">
 
         {/* Logo esquina */}
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-          <Image
-            src="/byte.png"
-            alt="Bytestock Logo"
-            width={80}
-            height={80}
-            className="w-20 h-14 sm:w-24 sm:h-16"
-          />
+        <div className="absolute top-12 left-16 sm:top-14 sm:left-20">
+          <span className="text-black font-bold text-3xl sm:text-4xl">SGH</span>
         </div>
 
         {/* Botón ingresar */}
@@ -78,3 +72,4 @@ export default function Hero() {
     </>
   );
 }
+

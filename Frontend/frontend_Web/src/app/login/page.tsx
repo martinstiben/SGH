@@ -94,7 +94,7 @@ export default function LoginPage() {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center flex flex-col items-center justify-center"
-      style={{ backgroundImage: "url('/background.png')" }}
+      style={{ backgroundImage: "url('/scuela.jpg')" }}
     >
       <button
         className="absolute top-5 left-5 bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700"

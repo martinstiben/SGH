@@ -183,11 +183,11 @@ export default function ProfessorPage() {
     if (query.trim() === '') {
       setFilteredTeachers(teachers);
     } else {
-      const filtered = teachers.filter(teacher =>
+      const filteredTeachers = teachers.filter(teacher =>
         teacher.teacherName.toLowerCase().includes(query.toLowerCase()) ||
         (teacher.subjectName && teacher.subjectName.toLowerCase().includes(query.toLowerCase()))
       );
-      setFilteredTeachers(filtered);
+      setFilteredTeachers(filteredTeachers);
     }
   };
 
@@ -197,7 +197,7 @@ export default function ProfessorPage() {
       <div className="flex-1 p-6">
         <HeaderProfessor onAddProfessor={handleAddProfessor} />
         <div className="my-6">
-          <SearchBar placeholder="Buscar profesores por nombre o materia..." onSearch={handleSearch} />
+          <SearchBar placeholder="Buscar profesores o usuarios por nombre, email, materia o rol..." onSearch={handleSearch} />
         </div>
         {errorMessage && (
           <div className="my-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -211,7 +211,7 @@ export default function ProfessorPage() {
         )}
         {loading ? (
           <div className="my-6 text-center">
-            <p className="text-gray-500">Cargando profesores...</p>
+            <p className="text-gray-500">Cargando profesores y usuarios...</p>
           </div>
         ) : (
           <div className="my-6">

@@ -12,7 +12,13 @@ import org.springframework.stereotype.Service;
 
 import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Model.users;
+import com.horarios.SGH.Model.teachers;
+import com.horarios.SGH.Model.subjects;
+import com.horarios.SGH.Model.TeacherSubject;
 import com.horarios.SGH.Repository.Iusers;
+import com.horarios.SGH.Repository.Iteachers;
+import com.horarios.SGH.Repository.Isubjects;
+import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.jwt.JwtTokenProvider;
@@ -26,6 +32,9 @@ import com.horarios.SGH.jwt.JwtTokenProvider;
 public class AuthService {
 
     private final Iusers repo;
+    private final Iteachers teacherRepo;
+    private final Isubjects subjectRepo;
+    private final TeacherSubjectRepository teacherSubjectRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -34,10 +43,16 @@ public class AuthService {
     private JavaMailSender mailSender;
 
     public AuthService(Iusers repo,
-                        PasswordEncoder encoder,
-                        AuthenticationManager authManager,
-                        JwtTokenProvider jwtTokenProvider) {
+                         Iteachers teacherRepo,
+                         Isubjects subjectRepo,
+                         TeacherSubjectRepository teacherSubjectRepo,
+                         PasswordEncoder encoder,
+                         AuthenticationManager authManager,
+                         JwtTokenProvider jwtTokenProvider) {
         this.repo = repo;
+        this.teacherRepo = teacherRepo;
+        this.subjectRepo = subjectRepo;
+        this.teacherSubjectRepo = teacherSubjectRepo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwtTokenProvider = jwtTokenProvider;

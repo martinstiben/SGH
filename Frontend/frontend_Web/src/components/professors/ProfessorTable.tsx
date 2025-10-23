@@ -11,6 +11,7 @@ interface Teacher {
   availabilityDays?: string;
 }
 
+
 interface ProfessorTableProps {
   teachers: Teacher[];
   onEdit: (teacher: Teacher) => void;
@@ -93,7 +94,7 @@ const ProfessorTable = ({ teachers, onEdit, onDelete, onManageAvailability }: Pr
 
         {teachers.length === 0 && (
           <div className="px-6 py-12 text-center">
-            <p className="text-gray-500 text-sm">No hay profesores registrados</p>
+            <p className="text-gray-500 text-sm">No hay profesores ni usuarios registrados</p>
           </div>
         )}
       </div>

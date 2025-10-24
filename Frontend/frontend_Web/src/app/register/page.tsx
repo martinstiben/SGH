@@ -15,19 +15,25 @@ export default function RegisterPage() {
     email: string;
     password: string;
     role: string;
+    subjectId?: number | null;
     acceptTerms: boolean;
   }
 
-  const handleRegister = async ({ name, email, password, role }: RegisterFormValues) => {
+  const handleRegister = async ({ name, email, password, role, subjectId }: RegisterFormValues) => {
     if (!name || !email || !password || !role) {
       setAuthError("Por favor completa todos los campos.");
+      return;
+    }
+
+    if (role === "MAESTRO" && !subjectId) {
+      setAuthError("Debes seleccionar una materia para el rol de maestro.");
       return;
     }
 
     try {
       setAuthError("");
       setSuccessMessage("");
-      const data = await register(name, email, password, role);
+      const data = await register(name, email, password, role, subjectId);
 
       if (data.message) {
         setSuccessMessage("¡Registro exitoso! Redirigiendo al login...");

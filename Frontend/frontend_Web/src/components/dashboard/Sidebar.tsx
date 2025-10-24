@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Home,
   Calendar,
@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Cookies from 'js-cookie';
 import { useAuth } from "@/hooks/useAuth";
 import LogoutModal from "./LogoutModal";
+import { getUserProfile } from "@/api/services/userApi";
 
 /**
  * Componente de navegación lateral (Sidebar) del dashboard
@@ -35,10 +36,24 @@ export default function Sidebar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeItem, setActiveItem] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("");
 
   const router = useRouter();
   const pathname = usePathname();
   const { logout } = useAuth();
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserRole(profile.role);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -72,27 +87,98 @@ export default function Sidebar() {
     setOpenMenu(openMenu === menu ? null : menu);
   };
 
-  const menuItems = [
-    { icon: Home, label: "General", path: "/dashboard" },
-    { icon: Users, label: "Profesores", path: "/dashboard/professor" },
-    { icon: BookOpen, label: "Materias", path: "/dashboard/subject" },
-    { icon: Library, label: "Cursos", path: "/dashboard/course" },
+  const getMenuItems = () => {
+    const baseItems: Array<{
+      icon: any;
+      label: string;
+      path?: string;
+      children?: Array<{ label: string; path: string }>;
+    }> = [
+      { icon: Home, label: "General", path: "/dashboard" },
+    ];
+
+    if (userRole === "ESTUDIANTE") {
+      return [
+        ...baseItems,
         {
-      icon: Calendar,
-      label: "Horarios",
-      children: [
-        { label: "Generar Horario", path: "/dashboard/schedule" },
-        {
-          label: "Horarios cursos",
-          path: "/dashboard/schedule/scheduleCourse",
+          icon: Calendar,
+          label: "Horarios",
+          children: [
+            {
+              label: "Ver Horarios",
+              path: "/dashboard/schedule/scheduleCourse",
+            },
+          ],
         },
+      ];
+    }
+
+    if (userRole === "MAESTRO") {
+      return [
+        ...baseItems,
+        { icon: Users, label: "Profesores", path: "/dashboard/professor" },
         {
-          label: "Horarios Profesores",
-          path: "/dashboard/schedule/scheduleProfessor",
+          icon: Calendar,
+          label: "Horarios",
+          children: [
+            {
+              label: "Horarios Profesores",
+              path: "/dashboard/schedule/scheduleProfessor",
+            },
+          ],
         },
-      ],
-    },
-  ];
+      ];
+    }
+
+    if (userRole === "DIRECTOR_DE_AREA") {
+      return [
+        ...baseItems,
+        { icon: Users, label: "Profesores", path: "/dashboard/professor" },
+        { icon: BookOpen, label: "Materias", path: "/dashboard/subject" },
+        { icon: Library, label: "Cursos", path: "/dashboard/course" },
+        {
+          icon: Calendar,
+          label: "Horarios",
+          children: [
+            { label: "Generar Horario", path: "/dashboard/schedule" },
+            {
+              label: "Horarios cursos",
+              path: "/dashboard/schedule/scheduleCourse",
+            },
+            {
+              label: "Horarios Profesores",
+              path: "/dashboard/schedule/scheduleProfessor",
+            },
+          ],
+        },
+      ];
+    }
+
+    // COORDINADOR - full access
+    return [
+      { icon: Home, label: "General", path: "/dashboard" },
+      { icon: Users, label: "Profesores", path: "/dashboard/professor" },
+      { icon: BookOpen, label: "Materias", path: "/dashboard/subject" },
+      { icon: Library, label: "Cursos", path: "/dashboard/course" },
+      {
+        icon: Calendar,
+        label: "Horarios",
+        children: [
+          { label: "Generar Horario", path: "/dashboard/schedule" },
+          {
+            label: "Horarios cursos",
+            path: "/dashboard/schedule/scheduleCourse",
+          },
+          {
+            label: "Horarios Profesores",
+            path: "/dashboard/schedule/scheduleProfessor",
+          },
+        ],
+      },
+    ];
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <>

@@ -1,12 +1,14 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginService } from '../api/services/authService';
-import { LoginRequest } from '../api/types/auth';
+import { loginService, registerService, verifyCodeService } from '../api/services/authService';
+import { LoginRequest, RegisterRequest, VerifyCodeRequest } from '../api/types/auth';
 
 interface AuthContextType {
   token: string | null;
   loading: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<{ requiresVerification: boolean; message?: string }>;
+  verifyCode: (request: VerifyCodeRequest) => Promise<void>;
+  register: (request: RegisterRequest) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
 }
 
@@ -35,6 +37,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (credentials: LoginRequest) => {
     const response = await loginService(credentials);
+
+    // For 2FA, login always requires verification
+    return { requiresVerification: true, message: response.message };
+  };
+
+  const verifyCode = async (request: VerifyCodeRequest) => {
+    const response = await verifyCodeService(request);
     const receivedToken = response.token;
 
     if (!receivedToken) {
@@ -45,13 +54,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.setItem('token', receivedToken);
   };
 
+  const register = async (request: RegisterRequest) => {
+    await registerService(request);
+    // Registration successful - return to login mode
+    return { success: true, message: 'Usuario registrado exitosamente. Ahora puedes iniciar sesión.' };
+  };
+
   const logout = async () => {
     setToken(null);
     await AsyncStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ token, loading, login, logout }}>
+    <AuthContext.Provider value={{ token, loading, login, verifyCode, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

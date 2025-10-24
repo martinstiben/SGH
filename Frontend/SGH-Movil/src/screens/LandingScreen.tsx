@@ -20,7 +20,7 @@ export default function LandingScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header
-        title="SGH"
+        title="Sistema de Gestión de Horarios"
         buttonLabel="Ingresar"
         onPress={handleLogin}
       />
@@ -29,27 +29,27 @@ export default function LandingScreen() {
 
       <InfoCard
         items={[
-          '🌈 Proyecto Cero Harvard y psicología positiva',
-          '🌸 45 años floreciendo en familia',
-          '📍 Cll 24 # 3-52, Los Samanes',
-          '📞 3158769862',
+          '📅 Generación automática de horarios escolares',
+          '👨‍🏫 Gestión completa de profesores y asignaturas',
+          '📊 Reportes y estadísticas en tiempo real',
+          '🔒 Seguridad y privacidad garantizada',
         ]}
       />
 
       <View style={styles.statsContainer}>
         <StatCard
-          number="80+"
-          label="Niños creciendo felices"
+          number="100%"
+          label="Automatización en la creación de horarios"
           icon={require('../assets/images/trophy.png')}
         />
         <StatCard
-          number="20+"
-          label="Actividades creativas al año"
+          number="0"
+          label="Conflictos de horarios garantizados"
           icon={require('../assets/images/rocket.png')}
         />
         <StatCard
-          number="10+"
-          label="Profesores que enseñan con amor"
+          number="🔔"
+          label="Notificaciones personalizables"
           icon={require('../assets/images/shapes.png')}
         />
       </View>

@@ -42,7 +42,7 @@ public class users {
     @Column(name = "code_expiration")
         private java.time.LocalDateTime codeExpiration;
 
-    @Column(name = "photoData")
+    @Column(name = "photoData", columnDefinition = "LONGBLOB")
     @Lob
     private byte[] photoData;
 

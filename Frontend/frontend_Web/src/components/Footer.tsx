@@ -14,12 +14,12 @@ const Footer: React.FC = () => {
     <footer className="bg-gradient-to-br from-blue-800 to-blue-900 text-white py-8">
       <div className="container mx-auto px-4">
         {/* Sección de desarrolladores */}
-        <div className="flex justify-center space-x-8 mb-8">
+        <div className="flex justify-center space-x-12 mb-8">
           <div className="text-center">
             <img
               src="/Martin.jpg"
               alt="Desarrollador 1"
-              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer object-cover"
               onClick={() => { setSelectedImage('/Martin.jpg'); setIsModalOpen(true); }}
             />
             <p className="font-semibold">Martin Stiben Narvaez</p>
@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
             <img
               src="/Racinger.jpg"
               alt="Desarrollador 2"
-              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer object-cover"
               onClick={() => { setSelectedImage('/Racinger.jpg'); setIsModalOpen(true); }}
             />
             <p className="font-semibold">Racinger Prada Olaya</p>
@@ -39,20 +39,10 @@ const Footer: React.FC = () => {
             <img
               src="/Juan.jpg"
               alt="Desarrollador 3"
-              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer object-cover"
               onClick={() => { setSelectedImage('/Juan.jpg'); setIsModalOpen(true); }}
             />
             <p className="font-semibold">Juan Pablo Saavedra</p>
-            <p>dev3@email.com</p>
-          </div>
-                    <div className="text-center">
-            <img
-              src="/gonzo.jpg"
-              alt="Desarrollador 4"
-              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
-              onClick={() => { setSelectedImage('/gonzo.jpg'); setIsModalOpen(true); }}
-            />
-            <p className="font-semibold">Juan Sebastian Gonzales</p>
             <p>dev3@email.com</p>
           </div>
         </div>

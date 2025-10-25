@@ -5,10 +5,10 @@ import { getUserProfile, getUserPhoto, updateUserProfile } from '@/api/services/
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNameChange?: (name: string) => void;
+  onProfileUpdate?: () => void;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onProfileUpdate }) => {
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -36,18 +36,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
           // Cargar foto de perfil
           if (data.userId) {
-            try {
-              console.log("Cargando foto en modal para usuario:", data.userId);
-              const photoUrl = await getUserPhoto(data.userId);
-              console.log("Foto cargada en modal:", photoUrl);
-              setUserPhoto(photoUrl);
-            } catch (photoError) {
-              console.log("No hay foto de perfil o error cargando en modal:", photoError);
-              setUserPhoto(null);
-            }
+            console.log("Cargando foto en modal para usuario:", data.userId);
+            const photoUrl = await getUserPhoto(data.userId);
+            console.log("Foto cargada en modal:", photoUrl);
+            setUserPhoto(photoUrl);
           }
         } catch (error) {
           console.error("Error loading profile:", error);
+          // Si hay error de autenticación, intentar refrescar la página
+          if (error instanceof Error && (error.message?.includes('401') || error.message?.includes('Error 401'))) {
+            console.log("Token expirado, refrescando página...");
+            window.location.reload();
+          }
         }
       };
       loadProfile();
@@ -114,18 +114,46 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
     setIsUpdating(true);
     try {
+      console.log('Actualizando perfil con datos:', {
+        name: profileData.name,
+        email: profileData.email,
+        hasPhoto: !!selectedPhoto
+      });
+
       await updateUserProfile(profileData.name, profileData.email, selectedPhoto || undefined);
+
+      console.log('Perfil actualizado exitosamente en el backend');
 
       // Mostrar notificación de éxito
       setShowSuccessNotification(true);
 
       // Actualizar datos originales y limpiar preview
       setOriginalData({ ...profileData });
-      if (selectedPhoto && profileData.userId) {
-        const photoUrl = await getUserPhoto(profileData.userId);
-        setUserPhoto(photoUrl);
-        setSelectedPhoto(null);
-        setPhotoPreview(null);
+
+      // Limpiar foto actual para forzar recarga
+      setUserPhoto(null);
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
+
+      // Recargar foto desde servidor con delay
+      if (profileData.userId) {
+        setTimeout(async () => {
+          try {
+            console.log('Recargando foto después de actualización...');
+            const updatedPhotoUrl = await getUserPhoto(profileData.userId!);
+            console.log('Foto recargada:', updatedPhotoUrl);
+            setUserPhoto(updatedPhotoUrl);
+          } catch (photoError) {
+            console.log('Error recargando foto, usando null:', photoError);
+            setUserPhoto(null);
+          }
+        }, 200);
+      }
+
+      // Notificar al componente padre para refrescar el perfil
+      if (onProfileUpdate) {
+        console.log('Notificando al componente padre para refrescar perfil');
+        onProfileUpdate();
       }
 
       // Auto-cerrar notificación después de 3 segundos

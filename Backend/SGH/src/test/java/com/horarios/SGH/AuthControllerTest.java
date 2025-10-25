@@ -111,11 +111,15 @@ public class AuthControllerTest {
     @Test
     public void testGetProfile() throws Exception {
         com.horarios.SGH.Model.users user = new com.horarios.SGH.Model.users();
+        com.horarios.SGH.Model.People person = new com.horarios.SGH.Model.People();
+        person.setFullName("Juan Pérez");
+        person.setEmail("test@example.com");
         user.setUserId(1);
-        user.setName("Juan Pérez");
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user.setRole(Role.MAESTRO);
+        user.setPerson(person);
+        user.setPasswordHash("password");
+        com.horarios.SGH.Model.Roles role = new com.horarios.SGH.Model.Roles();
+        role.setRoleName("MAESTRO");
+        user.setRole(role);
         when(authService.getProfile()).thenReturn(user);
 
         mockMvc.perform(get("/auth/profile"))

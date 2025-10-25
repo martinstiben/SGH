@@ -19,26 +19,60 @@ export default function ProfileCard() {
         setUserRole(data.role || "Usuario");
         setUserId(data.userId);
 
-        // Cargar foto de perfil
+        // Cargar foto de perfil solo si tenemos userId
         if (data.userId) {
-          try {
-            console.log("Cargando foto para usuario:", data.userId);
-            const photoUrl = await getUserPhoto(data.userId);
+          console.log("Cargando foto para usuario:", data.userId);
+          // No esperamos la foto, la cargamos de forma asíncrona
+          getUserPhoto(data.userId).then(photoUrl => {
             console.log("Foto cargada:", photoUrl);
             setUserPhoto(photoUrl);
-          } catch (photoError) {
-            console.log("No hay foto de perfil o error cargando:", photoError);
+          }).catch(photoError => {
+            console.log("Error cargando foto, usando imagen por defecto:", photoError);
             setUserPhoto(null);
-          }
+          });
         }
       } catch (error) {
         console.error("Error loading profile:", error);
         setUserName("Error");
         setUserRole("Error");
+        setUserPhoto(null);
       }
     };
     loadProfile();
   }, []);
+
+  // Función para refrescar el perfil después de actualizar
+  const refreshProfile = async () => {
+    try {
+      console.log('Refrescando perfil en componente padre...');
+      const data = await getUserProfile();
+      console.log('Datos del perfil obtenidos:', data);
+      setUserName(data.name);
+      setUserRole(data.role || "Usuario");
+      setUserId(data.userId);
+
+      // Forzar recarga de foto limpiando primero el estado
+      setUserPhoto(null);
+
+      // Recargar foto de perfil con un pequeño delay para asegurar limpieza
+      if (data.userId) {
+        setTimeout(async () => {
+          try {
+            console.log('Recargando foto de perfil para userId:', data.userId);
+            const photoUrl = await getUserPhoto(data.userId);
+            console.log('Foto de perfil recargada:', photoUrl);
+            setUserPhoto(photoUrl);
+          } catch (photoError) {
+            console.log('Error recargando foto, usando null:', photoError);
+            setUserPhoto(null);
+          }
+        }, 100);
+      }
+      console.log('Perfil refrescado exitosamente');
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
+    }
+  };
 
   return (
     <>
@@ -79,6 +113,7 @@ export default function ProfileCard() {
       <ProfileModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onProfileUpdate={refreshProfile}
       />
     </>
   );

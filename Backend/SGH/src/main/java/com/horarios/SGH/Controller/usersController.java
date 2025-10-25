@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.horarios.SGH.DTO.responseDTO;
 import com.horarios.SGH.Model.users;
@@ -48,7 +49,7 @@ public class usersController {
     // Login endpoint removido - ahora se maneja en AuthController con 2FA
 
     // Eliminar usuario (excepto master)
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/username/{username}")
     public ResponseEntity<responseDTO> deleteUser(@PathVariable String username) {
         try {
             if (username.equalsIgnoreCase(masterUsername)) {
@@ -57,7 +58,7 @@ public class usersController {
             }
 
             Optional<users> usuario = usersRepository.findByUserName(username);
-            if (!usuario.isPresent() || !usuario.get().getUserName().equals(username)) {
+            if (!usuario.isPresent() || !usuario.get().getPerson().getEmail().equals(username)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new responseDTO("ERROR", "Usuario no encontrado"));
             }
@@ -126,12 +127,12 @@ public class usersController {
             for (users user : allUsers) {
                 com.horarios.SGH.DTO.usersDTO dto = new com.horarios.SGH.DTO.usersDTO();
                 dto.setUserId(user.getUserId());
-                dto.setUserName(user.getUserName());
-                dto.setPassword(user.getPassword());
-                dto.setRole(user.getRole());
-                dto.setPhotoData(user.getPhotoData());
-                dto.setPhotoContentType(user.getPhotoContentType());
-                dto.setPhotoFileName(user.getPhotoFileName());
+                dto.setUserName(user.getPerson().getFullName());
+                dto.setPassword(user.getPasswordHash());
+                dto.setRole(com.horarios.SGH.Model.Role.valueOf(user.getRole().getRoleName()));
+                dto.setPhotoData(user.getPerson().getPhotoData());
+                dto.setPhotoContentType(user.getPerson().getPhotoContentType());
+                dto.setPhotoFileName(user.getPerson().getPhotoFileName());
                 userDTOs.add(dto);
             }
 

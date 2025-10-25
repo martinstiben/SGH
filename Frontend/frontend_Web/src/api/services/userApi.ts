@@ -79,12 +79,13 @@ export const getUserProfile = async () => {
 
 export const getUserPhoto = async (userId: number) => {
   try {
+    console.log("Obteniendo foto para usuario:", userId);
+
     const response = await fetch(`${API_BASE_URL}/users/${userId}/photo`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${Cookies.get("token")}`,
-      },
     });
+
+    console.log("Respuesta del servidor para foto:", response.status, response.statusText);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -92,7 +93,7 @@ export const getUserPhoto = async (userId: number) => {
         return null; // No hay foto
       }
       console.error("Error obteniendo foto:", response.status, response.statusText);
-      throw new Error(`Error ${response.status}`);
+      return null;
     }
 
     const blob = await response.blob();
@@ -103,7 +104,7 @@ export const getUserPhoto = async (userId: number) => {
   } catch (error: any) {
     console.error("Error obteniendo foto de usuario:", error);
     log.error("Error obteniendo foto de usuario", error);
-    throw error;
+    return null;
   }
 };
 

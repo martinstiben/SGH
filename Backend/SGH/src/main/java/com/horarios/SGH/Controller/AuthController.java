@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -103,16 +104,18 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("userId", user.getUserId(), "name", user.getName(), "email", user.getEmail(), "role", user.getRole().name()));
+            return ResponseEntity.ok(Map.of("userId", user.getUserId(), "name", user.getPerson().getFullName(), "email", user.getPerson().getEmail(), "role", user.getRole().getRoleName()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }
     }
 
     @PutMapping(value = "/profile", consumes = {"multipart/form-data"})
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateProfile(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "email", required = false) String email,

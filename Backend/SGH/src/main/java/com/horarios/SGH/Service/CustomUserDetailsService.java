@@ -45,13 +45,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         users user = userRepository.findByUserName(username).orElse(null);
         if (user != null) {
             // Verificar que el email coincida exactamente
-            if (!user.getUserName().equals(username)) {
+            if (!user.getPerson().getEmail().equals(username)) {
                 throw new UsernameNotFoundException("Usuario no encontrado: " + username);
             }
 
-            return User.withUsername(user.getUserName())
-                    .password(user.getPassword())
-                    .roles(user.getRole().name())
+            return User.withUsername(user.getPerson().getEmail())
+                    .password(user.getPasswordHash())
+                    .roles(user.getRole().getRoleName())
                     .build();
         }
 

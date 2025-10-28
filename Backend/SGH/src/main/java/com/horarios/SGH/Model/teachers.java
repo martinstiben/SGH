@@ -1,78 +1,60 @@
 package com.horarios.SGH.Model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+import java.util.List;
 
 @Entity(name="teachers")
+@Data
 public class teachers {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="teacherId")
     private int id;
 
     @Column(name="teacherName", length = 100, nullable=false)
-    @NotBlank(message = "El nombre del profesor no puede estar vacío")
-    @Size(min = 2, max = 100, message = "El nombre del profesor debe tener entre 2 y 100 caracteres")
-    @Pattern(regexp = "^[a-zA-ZÀ-ÿ\\s]+$", message = "El nombre del profesor solo puede contener letras y espacios")
+    @NotNull(message = "El nombre del docente es obligatorio")
+    @Size(min = 1, max = 100, message = "El nombre del docente debe tener entre 1 y 100 caracteres")
     private String teacherName;
 
-    @Column(name="photoData", columnDefinition = "LONGBLOB")
+    @Column(name = "area", length = 100)
+    @Size(max = 100, message = "El área debe tener máximo 100 caracteres")
+    private String area;
+
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TeacherSubject> teacherSubjects;
+
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TeacherAvailability> availabilities;
+
+    @OneToMany(mappedBy = "teacherId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<schedule> schedules;
+
+    @OneToMany(mappedBy = "gradeDirector", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<courses> directedCourses;
+
     @Lob
+    @Column(name = "photo_data", columnDefinition = "LONGBLOB")
     private byte[] photoData;
 
-    @Column(name="photoContentType", length = 100)
+    @Column(name = "photo_content_type", length = 100)
+    @Size(max = 100, message = "El tipo de contenido de la foto debe tener máximo 100 caracteres")
     private String photoContentType;
 
-    @Column(name="photoFileName", length = 255)
+    @Column(name = "photo_file_name", length = 255)
+    @Size(max = 255, message = "El nombre del archivo de la foto debe tener máximo 255 caracteres")
     private String photoFileName;
 
+    // Constructor vacío
     public teachers() {}
 
+    // Constructor con parámetros principales
     public teachers(int id, String teacherName) {
         this.id = id;
         this.teacherName = teacherName;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getTeacherName() {
-        return teacherName;
-    }
-
-    public void setTeacherName(String teacherName) {
-        this.teacherName = teacherName;
-    }
-
-    public byte[] getPhotoData() {
-        return photoData;
-    }
-
-    public void setPhotoData(byte[] photoData) {
-        this.photoData = photoData;
-    }
-
-    public String getPhotoContentType() {
-        return photoContentType;
-    }
-
-    public void setPhotoContentType(String photoContentType) {
-        this.photoContentType = photoContentType;
-    }
-
-    public String getPhotoFileName() {
-        return photoFileName;
-    }
-
-    public void setPhotoFileName(String photoFileName) {
-        this.photoFileName = photoFileName;
-    }
+    // Getters y setters generados por Lombok (@Data)
 }

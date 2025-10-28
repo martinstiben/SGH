@@ -1,6 +1,7 @@
 package com.horarios.SGH.Controller;
 
 import com.horarios.SGH.DTO.ScheduleHistoryDTO;
+import com.horarios.SGH.Service.PermissionService;
 import com.horarios.SGH.Service.ScheduleExportService;
 import com.horarios.SGH.Service.ScheduleGenerationService;
 import com.horarios.SGH.Service.ScheduleHistoryService;
@@ -27,18 +28,20 @@ public class ScheduleController {
     private final ScheduleGenerationService generationService;
     private final ScheduleHistoryService historyService;
     private final ScheduleExportService exportService;
+    private final PermissionService permissionService;
 
     @PostMapping("/generate")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_GENERATE_SCHEDULES')")
     @Operation(
         summary = "Generar horarios automáticamente por cursos",
         description = "Genera horarios automáticamente para cursos que no tienen horario asignado. " +
-                     "Utiliza únicamente el profesor asignado a cada curso y valida que cada profesor " +
-                     "esté asociado a una sola materia."
+                      "Utiliza únicamente el profesor asignado a cada curso y valida que cada profesor " +
+                      "esté asociado a una sola materia."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Horarios generados exitosamente"),
         @ApiResponse(responseCode = "400", description = "Error en parámetros o configuración de profesores"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para generar horarios"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ScheduleHistoryDTO generate(
@@ -50,14 +53,14 @@ public class ScheduleController {
     }
 
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_VIEW_SCHEDULES')")
     @Operation(
         summary = "Obtener historial de generaciones",
         description = "Consulta el historial de todas las generaciones de horarios realizadas en el sistema"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Historial obtenido exitosamente"),
-        @ApiResponse(responseCode = "403", description = "No autorizado")
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para ver el historial")
     })
     public Page<ScheduleHistoryDTO> history(
             @Parameter(description = "Número de página (0-based)", example = "0")

@@ -2,6 +2,7 @@ package com.horarios.SGH.Controller;
 
 import com.horarios.SGH.DTO.ScheduleDTO;
 import com.horarios.SGH.DTO.responseDTO;
+import com.horarios.SGH.Service.PermissionService;
 import com.horarios.SGH.Service.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,30 +25,33 @@ import java.util.List;
 public class ScheduleCrudController {
 
     private final ScheduleService scheduleService;
+    private final PermissionService permissionService;
 
-    public ScheduleCrudController(ScheduleService scheduleService) {
+    public ScheduleCrudController(ScheduleService scheduleService, PermissionService permissionService) {
         this.scheduleService = scheduleService;
+        this.permissionService = permissionService;
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_CREATE_SCHEDULES')")
     @Operation(
         summary = "Crear horarios manualmente",
         description = "Permite crear horarios específicos asignando profesores y materias a cursos. " +
-                      "Los campos teacherId y subjectId son OBLIGATORIOS. " +
-                      "La combinación teacherId + subjectId debe existir en TeacherSubject. " +
-                      "Un curso puede tener múltiples profesores en diferentes horarios, pero cada profesor " +
-                      "debe estar asociado únicamente a una materia. " +
-                      "Las horas se envían como strings en formato 'HH:mm'."
+                       "Los campos teacherId y subjectId son OBLIGATORIOS. " +
+                       "La combinación teacherId + subjectId debe existir en TeacherSubject. " +
+                       "Un curso puede tener múltiples profesores en diferentes horarios, pero cada profesor " +
+                       "debe estar asociado únicamente a una materia. " +
+                       "Las horas se envían como strings en formato 'HH:mm'."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Horarios creados exitosamente"),
         @ApiResponse(responseCode = "400", description = "Error de validación (profesor no disponible, conflicto de horario, etc.)"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para crear horarios"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<ScheduleDTO>> createSchedule(
             @Parameter(description = "Lista de horarios a crear", required = true,
-                       example = "[{\"courseId\": 12, \"teacherId\": 14, \"subjectId\": 8, \"day\": \"Lunes\", \"startTime\": \"06:06\", \"endTime\": \"07:00\", \"scheduleName\": \"Matemáticas - Juan Pérez\"}]")
+                        example = "[{\"courseId\": 12, \"teacherId\": 14, \"subjectId\": 8, \"day\": \"Lunes\", \"startTime\": \"06:06\", \"endTime\": \"07:00\", \"scheduleName\": \"Matemáticas - Juan Pérez\"}]")
             @RequestBody List<ScheduleDTO> assignments,
             Authentication auth) {
         try {
@@ -59,14 +63,14 @@ public class ScheduleCrudController {
     }
 
     @GetMapping("/{name}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_VIEW_SCHEDULES')")
     @Operation(
         summary = "Obtener horarios por nombre",
         description = "Busca horarios por el nombre del scheduleName"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Horarios encontrados"),
-        @ApiResponse(responseCode = "403", description = "No autorizado")
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para ver horarios")
     })
     public List<ScheduleDTO> getByName(
             @Parameter(description = "Nombre del horario a buscar", example = "Matemáticas")
@@ -110,7 +114,7 @@ public class ScheduleCrudController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_UPDATE_SCHEDULES')")
     @Operation(
         summary = "Actualizar horario",
         description = "Actualiza un horario específico por su ID"
@@ -119,7 +123,7 @@ public class ScheduleCrudController {
         @ApiResponse(responseCode = "200", description = "Horario actualizado exitosamente"),
         @ApiResponse(responseCode = "400", description = "Error de validación"),
         @ApiResponse(responseCode = "404", description = "Horario no encontrado"),
-        @ApiResponse(responseCode = "403", description = "No autorizado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para actualizar horarios"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<responseDTO> updateSchedule(
@@ -149,7 +153,7 @@ public class ScheduleCrudController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_DELETE_SCHEDULES')")
     @Operation(
         summary = "Eliminar horario",
         description = "Elimina un horario específico por su ID"
@@ -157,7 +161,7 @@ public class ScheduleCrudController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Horario eliminado exitosamente"),
         @ApiResponse(responseCode = "404", description = "Horario no encontrado"),
-        @ApiResponse(responseCode = "403", description = "No autorizado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para eliminar horarios"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<responseDTO> deleteSchedule(
@@ -175,14 +179,14 @@ public class ScheduleCrudController {
     }
 
     @DeleteMapping("/by-day/{day}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+    @PreAuthorize("hasAuthority('PERMISSION_DELETE_SCHEDULES')")
     @Operation(
         summary = "Eliminar horarios por día",
         description = "Elimina todos los horarios asignados a un día específico"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Horarios eliminados exitosamente"),
-        @ApiResponse(responseCode = "403", description = "No autorizado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos para eliminar horarios"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<Void> deleteByDay(

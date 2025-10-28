@@ -20,8 +20,12 @@ import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import com.horarios.SGH.Repository.ITeacherAvailabilityRepository;
 import com.horarios.SGH.Repository.IPeopleRepository;
 import com.horarios.SGH.Repository.IRolesRepository;
+import com.horarios.SGH.Repository.IPermissionsRepository;
+import com.horarios.SGH.Repository.IPermissionsRolesRepository;
 import com.horarios.SGH.Model.People;
 import com.horarios.SGH.Model.Roles;
+import com.horarios.SGH.Model.Permissions;
+import com.horarios.SGH.Model.PermissionsRoles;
 
 import org.springframework.boot.CommandLineRunner;
 import java.time.LocalTime;
@@ -51,6 +55,154 @@ public class DataInitializer {
     }
 
     @Bean
+    public CommandLineRunner seedPermissions(IPermissionsRepository permissionsRepo) {
+        return args -> {
+            if (permissionsRepo.count() == 0) {
+                // Permisos para horarios
+                permissionsRepo.save(new Permissions("VIEW_SCHEDULES", "Ver horarios"));
+                permissionsRepo.save(new Permissions("CREATE_SCHEDULES", "Crear horarios manualmente"));
+                permissionsRepo.save(new Permissions("UPDATE_SCHEDULES", "Actualizar horarios"));
+                permissionsRepo.save(new Permissions("DELETE_SCHEDULES", "Eliminar horarios"));
+                permissionsRepo.save(new Permissions("GENERATE_SCHEDULES", "Generar horarios automáticamente"));
+                permissionsRepo.save(new Permissions("EXPORT_SCHEDULES", "Exportar horarios"));
+
+                // Permisos para cursos
+                permissionsRepo.save(new Permissions("VIEW_COURSES", "Ver cursos"));
+                permissionsRepo.save(new Permissions("CREATE_COURSES", "Crear cursos"));
+                permissionsRepo.save(new Permissions("UPDATE_COURSES", "Actualizar cursos"));
+                permissionsRepo.save(new Permissions("DELETE_COURSES", "Eliminar cursos"));
+
+                // Permisos para materias
+                permissionsRepo.save(new Permissions("VIEW_SUBJECTS", "Ver materias"));
+                permissionsRepo.save(new Permissions("CREATE_SUBJECTS", "Crear materias"));
+                permissionsRepo.save(new Permissions("UPDATE_SUBJECTS", "Actualizar materias"));
+                permissionsRepo.save(new Permissions("DELETE_SUBJECTS", "Eliminar materias"));
+
+                // Permisos para profesores
+                permissionsRepo.save(new Permissions("VIEW_TEACHERS", "Ver profesores"));
+                permissionsRepo.save(new Permissions("CREATE_TEACHERS", "Crear profesores"));
+                permissionsRepo.save(new Permissions("UPDATE_TEACHERS", "Actualizar profesores"));
+                permissionsRepo.save(new Permissions("DELETE_TEACHERS", "Eliminar profesores"));
+                permissionsRepo.save(new Permissions("MANAGE_AVAILABILITY", "Gestionar disponibilidad de profesores"));
+
+                // Permisos para usuarios
+                permissionsRepo.save(new Permissions("VIEW_USERS", "Ver usuarios"));
+                permissionsRepo.save(new Permissions("CREATE_USERS", "Crear usuarios"));
+                permissionsRepo.save(new Permissions("UPDATE_USERS", "Actualizar usuarios"));
+                permissionsRepo.save(new Permissions("DELETE_USERS", "Eliminar usuarios"));
+
+                System.out.println(">> Permisos iniciales creados");
+            } else {
+                System.out.println(">> Permisos ya existen");
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner seedPermissionsRoles(IPermissionsRepository permissionsRepo,
+                                                IRolesRepository rolesRepo,
+                                                IPermissionsRolesRepository permissionsRolesRepo) {
+        return args -> {
+            if (permissionsRolesRepo.count() == 0) {
+                // Obtener roles
+                Roles estudiante = rolesRepo.findByRoleName("ESTUDIANTE").orElse(null);
+                Roles maestro = rolesRepo.findByRoleName("MAESTRO").orElse(null);
+                Roles coordinador = rolesRepo.findByRoleName("COORDINADOR").orElse(null);
+                Roles director = rolesRepo.findByRoleName("DIRECTOR_DE_AREA").orElse(null);
+
+                if (estudiante == null || maestro == null || coordinador == null || director == null) {
+                    System.out.println(">> Error: Roles no encontrados para asignar permisos");
+                    return;
+                }
+
+                // Obtener permisos
+                Permissions viewSchedules = permissionsRepo.findByPermissionName("VIEW_SCHEDULES").orElse(null);
+                Permissions exportSchedules = permissionsRepo.findByPermissionName("EXPORT_SCHEDULES").orElse(null);
+                Permissions createSchedules = permissionsRepo.findByPermissionName("CREATE_SCHEDULES").orElse(null);
+                Permissions updateSchedules = permissionsRepo.findByPermissionName("UPDATE_SCHEDULES").orElse(null);
+                Permissions deleteSchedules = permissionsRepo.findByPermissionName("DELETE_SCHEDULES").orElse(null);
+                Permissions generateSchedules = permissionsRepo.findByPermissionName("GENERATE_SCHEDULES").orElse(null);
+
+                Permissions viewCourses = permissionsRepo.findByPermissionName("VIEW_COURSES").orElse(null);
+                Permissions createCourses = permissionsRepo.findByPermissionName("CREATE_COURSES").orElse(null);
+                Permissions updateCourses = permissionsRepo.findByPermissionName("UPDATE_COURSES").orElse(null);
+                Permissions deleteCourses = permissionsRepo.findByPermissionName("DELETE_COURSES").orElse(null);
+
+                Permissions viewSubjects = permissionsRepo.findByPermissionName("VIEW_SUBJECTS").orElse(null);
+                Permissions createSubjects = permissionsRepo.findByPermissionName("CREATE_SUBJECTS").orElse(null);
+                Permissions updateSubjects = permissionsRepo.findByPermissionName("UPDATE_SUBJECTS").orElse(null);
+                Permissions deleteSubjects = permissionsRepo.findByPermissionName("DELETE_SUBJECTS").orElse(null);
+
+                Permissions viewTeachers = permissionsRepo.findByPermissionName("VIEW_TEACHERS").orElse(null);
+                Permissions createTeachers = permissionsRepo.findByPermissionName("CREATE_TEACHERS").orElse(null);
+                Permissions updateTeachers = permissionsRepo.findByPermissionName("UPDATE_TEACHERS").orElse(null);
+                Permissions deleteTeachers = permissionsRepo.findByPermissionName("DELETE_TEACHERS").orElse(null);
+                Permissions manageAvailability = permissionsRepo.findByPermissionName("MANAGE_AVAILABILITY").orElse(null);
+
+                Permissions viewUsers = permissionsRepo.findByPermissionName("VIEW_USERS").orElse(null);
+                Permissions createUsers = permissionsRepo.findByPermissionName("CREATE_USERS").orElse(null);
+                Permissions updateUsers = permissionsRepo.findByPermissionName("UPDATE_USERS").orElse(null);
+                Permissions deleteUsers = permissionsRepo.findByPermissionName("DELETE_USERS").orElse(null);
+
+                // Asignar permisos a ESTUDIANTE
+                if (viewSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(estudiante, viewSchedules));
+                if (exportSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(estudiante, exportSchedules));
+                if (viewCourses != null) permissionsRolesRepo.save(new PermissionsRoles(estudiante, viewCourses));
+
+                // Asignar permisos a MAESTRO
+                if (viewSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, viewSchedules));
+                if (exportSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, exportSchedules));
+                if (viewCourses != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, viewCourses));
+                if (viewSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, viewSubjects));
+                if (viewTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, viewTeachers));
+                if (manageAvailability != null) permissionsRolesRepo.save(new PermissionsRoles(maestro, manageAvailability));
+
+                // Asignar permisos a COORDINADOR (todos los permisos)
+                if (viewSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, viewSchedules));
+                if (createSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, createSchedules));
+                if (updateSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, updateSchedules));
+                if (deleteSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, deleteSchedules));
+                if (generateSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, generateSchedules));
+                if (exportSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, exportSchedules));
+
+                if (viewCourses != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, viewCourses));
+                if (createCourses != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, createCourses));
+                if (updateCourses != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, updateCourses));
+                if (deleteCourses != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, deleteCourses));
+
+                if (viewSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, viewSubjects));
+                if (createSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, createSubjects));
+                if (updateSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, updateSubjects));
+                if (deleteSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, deleteSubjects));
+
+                if (viewTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, viewTeachers));
+                if (createTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, createTeachers));
+                if (updateTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, updateTeachers));
+                if (deleteTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, deleteTeachers));
+                if (manageAvailability != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, manageAvailability));
+
+                if (viewUsers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, viewUsers));
+                if (createUsers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, createUsers));
+                if (updateUsers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, updateUsers));
+                if (deleteUsers != null) permissionsRolesRepo.save(new PermissionsRoles(coordinador, deleteUsers));
+
+                // Asignar permisos a DIRECTOR_DE_AREA (puede crear y actualizar horarios)
+                if (viewSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(director, viewSchedules));
+                if (createSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(director, createSchedules));
+                if (updateSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(director, updateSchedules));
+                if (exportSchedules != null) permissionsRolesRepo.save(new PermissionsRoles(director, exportSchedules));
+                if (viewCourses != null) permissionsRolesRepo.save(new PermissionsRoles(director, viewCourses));
+                if (viewTeachers != null) permissionsRolesRepo.save(new PermissionsRoles(director, viewTeachers));
+                if (viewSubjects != null) permissionsRolesRepo.save(new PermissionsRoles(director, viewSubjects));
+
+                System.out.println(">> Permisos asignados a roles");
+            } else {
+                System.out.println(">> Permisos ya están asignados a roles");
+            }
+        };
+    }
+
+    @Bean
     public CommandLineRunner seedMasterUser(Iusers repo, PasswordEncoder encoder, IPeopleRepository peopleRepo, IRolesRepository rolesRepo) {
         return args -> {
             if (!repo.existsByUserName(masterUsername)) {
@@ -68,6 +220,7 @@ public class DataInitializer {
                 Roles maestroRole = rolesRepo.findByRoleName("MAESTRO").orElseThrow(() -> new RuntimeException("Rol MAESTRO no encontrado"));
 
                 users u = new users(masterPerson, maestroRole, encoder.encode(masterPassword));
+                u.setArea("Administración"); // Usuario master tiene acceso a todas las áreas
                 repo.save(u);
                 System.out.println(">> Master creado: " + masterUsername);
             } else {
@@ -106,14 +259,17 @@ public class DataInitializer {
             if (teacherRepo.count() == 0) {
                 teachers teacher1 = new teachers();
                 teacher1.setTeacherName("Juan Pérez");
+                teacher1.setArea("Ciencias Básicas"); // Área asignada
                 teacher1 = teacherRepo.save(teacher1);
 
                 teachers teacher2 = new teachers();
                 teacher2.setTeacherName("María García");
+                teacher2.setArea("Ciencias Básicas"); // Área asignada
                 teacher2 = teacherRepo.save(teacher2);
 
                 teachers teacher3 = new teachers();
                 teacher3.setTeacherName("Carlos López");
+                teacher3.setArea("Ciencias Básicas"); // Área asignada
                 teacher3 = teacherRepo.save(teacher3);
 
                 // Asignar especializaciones
@@ -202,18 +358,21 @@ public class DataInitializer {
                 TeacherSubject ts1 = teacherSubjectRepo.findByTeacher_IdAndSubject_Id(teacher1.getId(), math.getId()).orElse(null);
                 courses course1 = new courses();
                 course1.setCourseName("1A");
+                course1.setArea("Ciencias Básicas"); // Área asignada
                 course1.setTeacherSubject(ts1);
                 courseRepo.save(course1);
 
                 TeacherSubject ts2 = teacherSubjectRepo.findByTeacher_IdAndSubject_Id(teacher2.getId(), physics.getId()).orElse(null);
                 courses course2 = new courses();
                 course2.setCourseName("2B");
+                course2.setArea("Ciencias Básicas"); // Área asignada
                 course2.setTeacherSubject(ts2);
                 courseRepo.save(course2);
 
                 TeacherSubject ts3 = teacherSubjectRepo.findByTeacher_IdAndSubject_Id(teacher3.getId(), chemistry.getId()).orElse(null);
                 courses course3 = new courses();
                 course3.setCourseName("3C");
+                course3.setArea("Ciencias Básicas"); // Área asignada
                 course3.setTeacherSubject(ts3);
                 courseRepo.save(course3);
 

@@ -28,6 +28,10 @@ public class users {
     @Size(min = 1, max = 255, message = "El hash de la contraseña debe tener entre 1 y 255 caracteres")
     private String passwordHash;
 
+    @Column(name = "area", length = 100)
+    @Size(max = 100, message = "El área debe tener máximo 100 caracteres")
+    private String area;
+
     @Column(name = "verification_code", length = 255)
     @Size(max = 255, message = "El código de verificación debe tener máximo 255 caracteres")
     private String verificationCode;

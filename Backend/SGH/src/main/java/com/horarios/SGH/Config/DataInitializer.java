@@ -50,8 +50,9 @@ public class DataInitializer {
         };
     }
 
+
     @Bean
-    public CommandLineRunner seedMasterUser(Iusers repo, PasswordEncoder encoder, IPeopleRepository peopleRepo, IRolesRepository rolesRepo) {
+    public CommandLineRunner seedUsers(Iusers repo, PasswordEncoder encoder, IPeopleRepository peopleRepo, IRolesRepository rolesRepo) {
         return args -> {
             if (!repo.existsByUserName(masterUsername)) {
                 // Verificar si ya existe una persona con este email

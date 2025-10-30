@@ -18,6 +18,10 @@ import com.horarios.SGH.Repository.Iteachers;
 import com.horarios.SGH.Repository.Icourses;
 import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import com.horarios.SGH.Repository.ITeacherAvailabilityRepository;
+import com.horarios.SGH.Repository.IPeopleRepository;
+import com.horarios.SGH.Repository.IRolesRepository;
+import com.horarios.SGH.Model.People;
+import com.horarios.SGH.Model.Roles;
 
 import org.springframework.boot.CommandLineRunner;
 import java.time.LocalTime;
@@ -32,13 +36,38 @@ public class DataInitializer {
     private String masterPassword;
 
     @Bean
-    public CommandLineRunner seedMasterUser(Iusers repo, PasswordEncoder encoder) {
+    public CommandLineRunner seedRoles(IRolesRepository rolesRepo) {
+        return args -> {
+            if (rolesRepo.count() == 0) {
+                rolesRepo.save(new Roles("MAESTRO"));
+                rolesRepo.save(new Roles("ESTUDIANTE"));
+                rolesRepo.save(new Roles("COORDINADOR"));
+                rolesRepo.save(new Roles("DIRECTOR_DE_AREA"));
+                System.out.println(">> Roles iniciales creados");
+            } else {
+                System.out.println(">> Roles ya existen");
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner seedMasterUser(Iusers repo, PasswordEncoder encoder, IPeopleRepository peopleRepo, IRolesRepository rolesRepo) {
         return args -> {
             if (!repo.existsByUserName(masterUsername)) {
-                users u = new users();
-                u.setUserName(masterUsername);
-                u.setPassword(encoder.encode(masterPassword));
-                u.setRole(com.horarios.SGH.Model.Role.MAESTRO); // Asignar rol al usuario master
+                // Verificar si ya existe una persona con este email
+                if (peopleRepo.findByEmail(masterUsername).isPresent()) {
+                    System.out.println(">> Persona con email master ya existe, saltando creación");
+                    return;
+                }
+
+                // Crear persona para el usuario master
+                People masterPerson = new People("Master User", masterUsername);
+                masterPerson = peopleRepo.save(masterPerson);
+
+                // Obtener rol MAESTRO
+                Roles maestroRole = rolesRepo.findByRoleName("MAESTRO").orElseThrow(() -> new RuntimeException("Rol MAESTRO no encontrado"));
+
+                users u = new users(masterPerson, maestroRole, encoder.encode(masterPassword));
                 repo.save(u);
                 System.out.println(">> Master creado: " + masterUsername);
             } else {

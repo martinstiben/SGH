@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:3000"})
 @Tag(name = "Autenticación", description = "Endpoints para autenticación y registro de usuarios")
 public class AuthController {
 
@@ -102,28 +104,38 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getProfile() {
         try {
             var user = service.getProfile();
-            return ResponseEntity.ok(Map.of("name", user.getName(), "email", user.getEmail(), "role", user.getRole().name()));
+            return ResponseEntity.ok(Map.of("userId", user.getUserId(), "name", user.getPerson().getFullName(), "email", user.getPerson().getEmail(), "role", user.getRole().getRoleName()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error obteniendo perfil"));
         }
     }
 
     @PutMapping(value = "/profile", consumes = {"multipart/form-data"})
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateProfile(
             @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {
         try {
             // Validar que al menos un campo esté presente
-            if ((name == null || name.trim().isEmpty()) && (photo == null || photo.isEmpty())) {
+            if ((name == null || name.trim().isEmpty()) &&
+                (email == null || email.trim().isEmpty()) &&
+                (photo == null || photo.isEmpty())) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Debe proporcionar al menos un campo para actualizar"));
             }
 
             // Actualizar nombre si se proporcionó
             if (name != null && !name.trim().isEmpty()) {
                 service.updateUserName(name);
+            }
+
+            // Actualizar email si se proporcionó
+            if (email != null && !email.trim().isEmpty()) {
+                service.updateUserEmail(email);
             }
 
             // Actualizar foto si se proporcionó
@@ -135,8 +147,11 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("message", "Perfil actualizado correctamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error actualizando perfil"));
+            e.printStackTrace(); // Para debugging
+            return ResponseEntity.status(500).body(Map.of("error", "Error actualizando perfil: " + e.getMessage()));
         }
     }
 

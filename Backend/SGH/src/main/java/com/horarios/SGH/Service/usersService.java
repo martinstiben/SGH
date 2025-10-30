@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.horarios.SGH.Model.users;
+import com.horarios.SGH.Model.Role;
 import com.horarios.SGH.Repository.Iusers;
 
 @Service
@@ -45,14 +46,14 @@ public class usersService {
 
             if (photo != null && !photo.isEmpty()) {
                 FileStorageService.PhotoData photoData = fileStorageService.processImageFile(photo);
-                user.setPhotoData(photoData.getData());
-                user.setPhotoContentType(photoData.getContentType());
-                user.setPhotoFileName(photoData.getFileName());
+                user.getPerson().setPhotoData(photoData.getData());
+                user.getPerson().setPhotoContentType(photoData.getContentType());
+                user.getPerson().setPhotoFileName(photoData.getFileName());
             } else {
                 // Si photo es null o vacío, eliminar foto existente
-                user.setPhotoData(null);
-                user.setPhotoContentType(null);
-                user.setPhotoFileName(null);
+                user.getPerson().setPhotoData(null);
+                user.getPerson().setPhotoContentType(null);
+                user.getPerson().setPhotoFileName(null);
             }
 
             usersRepository.save(user);
@@ -76,12 +77,12 @@ public class usersService {
                 .map(user -> {
                     com.horarios.SGH.DTO.usersDTO dto = new com.horarios.SGH.DTO.usersDTO();
                     dto.setUserId(user.getUserId());
-                    dto.setUserName(user.getUserName());
-                    dto.setPassword(user.getPassword());
-                    dto.setRole(user.getRole());
-                    dto.setPhotoData(user.getPhotoData());
-                    dto.setPhotoContentType(user.getPhotoContentType());
-                    dto.setPhotoFileName(user.getPhotoFileName());
+                    dto.setUserName(user.getPerson().getFullName());
+                    dto.setPassword(user.getPasswordHash());
+                    dto.setRole(Role.valueOf(user.getRole().getRoleName()));
+                    dto.setPhotoData(user.getPerson().getPhotoData());
+                    dto.setPhotoContentType(user.getPerson().getPhotoContentType());
+                    dto.setPhotoFileName(user.getPerson().getPhotoFileName());
                     return dto;
                 });
         } catch (Exception e) {

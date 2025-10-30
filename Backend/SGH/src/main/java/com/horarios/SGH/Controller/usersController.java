@@ -8,13 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.horarios.SGH.DTO.responseDTO;
 import com.horarios.SGH.Model.users;
 import com.horarios.SGH.Service.usersService;
 import com.horarios.SGH.Repository.Iusers;
 
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:3000"})
 @RestController
 @RequestMapping("/users")
 public class usersController {
@@ -48,7 +49,7 @@ public class usersController {
     // Login endpoint removido - ahora se maneja en AuthController con 2FA
 
     // Eliminar usuario (excepto master)
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/username/{username}")
     public ResponseEntity<responseDTO> deleteUser(@PathVariable String username) {
         try {
             if (username.equalsIgnoreCase(masterUsername)) {
@@ -57,7 +58,7 @@ public class usersController {
             }
 
             Optional<users> usuario = usersRepository.findByUserName(username);
-            if (!usuario.isPresent() || !usuario.get().getUserName().equals(username)) {
+            if (!usuario.isPresent() || !usuario.get().getPerson().getEmail().equals(username)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new responseDTO("ERROR", "Usuario no encontrado"));
             }
@@ -113,6 +114,55 @@ public class usersController {
                     .body(user.getPhotoData());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Obtener todos los usuarios
+    @GetMapping
+    public ResponseEntity<java.util.List<com.horarios.SGH.DTO.usersDTO>> getAllUsers() {
+        try {
+            java.util.List<users> allUsers = usersRepository.findAll();
+            java.util.List<com.horarios.SGH.DTO.usersDTO> userDTOs = new java.util.ArrayList<>();
+
+            for (users user : allUsers) {
+                com.horarios.SGH.DTO.usersDTO dto = new com.horarios.SGH.DTO.usersDTO();
+                dto.setUserId(user.getUserId());
+                dto.setUserName(user.getPerson().getFullName());
+                dto.setPassword(user.getPasswordHash());
+                dto.setRole(com.horarios.SGH.Model.Role.valueOf(user.getRole().getRoleName()));
+                dto.setPhotoData(user.getPerson().getPhotoData());
+                dto.setPhotoContentType(user.getPerson().getPhotoContentType());
+                dto.setPhotoFileName(user.getPerson().getPhotoFileName());
+                userDTOs.add(dto);
+            }
+
+            return ResponseEntity.ok(userDTOs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Eliminar usuario por ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<responseDTO> deleteUserById(@PathVariable int id) {
+        try {
+            if (masterUsername != null && masterUsername.equals(String.valueOf(id))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new responseDTO("ERROR", "No se puede eliminar el usuario master"));
+            }
+
+            Optional<users> usuario = usersRepository.findById(id);
+            if (!usuario.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new responseDTO("ERROR", "Usuario no encontrado"));
+            }
+
+            usersRepository.deleteById(id);
+            return ResponseEntity.ok(new responseDTO("OK", "Usuario eliminado correctamente"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new responseDTO("ERROR", "Error interno: " + e.getMessage()));
         }
     }
 }

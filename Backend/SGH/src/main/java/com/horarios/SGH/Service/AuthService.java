@@ -12,8 +12,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.horarios.SGH.Model.Role;
+import com.horarios.SGH.Model.Roles;
 import com.horarios.SGH.Model.users;
+import com.horarios.SGH.Model.People;
+import com.horarios.SGH.Model.teachers;
+import com.horarios.SGH.Model.subjects;
+import com.horarios.SGH.Model.TeacherSubject;
 import com.horarios.SGH.Repository.Iusers;
+import com.horarios.SGH.Repository.IPeopleRepository;
+import com.horarios.SGH.Repository.IRolesRepository;
+import com.horarios.SGH.Repository.Iteachers;
+import com.horarios.SGH.Repository.Isubjects;
+import com.horarios.SGH.Repository.TeacherSubjectRepository;
 import com.horarios.SGH.DTO.LoginRequestDTO;
 import com.horarios.SGH.DTO.LoginResponseDTO;
 import com.horarios.SGH.jwt.JwtTokenProvider;
@@ -27,6 +37,11 @@ import com.horarios.SGH.jwt.JwtTokenProvider;
 public class AuthService {
 
     private final Iusers repo;
+    private final IPeopleRepository peopleRepo;
+    private final IRolesRepository rolesRepo;
+    private final Iteachers teacherRepo;
+    private final Isubjects subjectRepo;
+    private final TeacherSubjectRepository teacherSubjectRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -35,10 +50,20 @@ public class AuthService {
     private JavaMailSender mailSender;
 
     public AuthService(Iusers repo,
-                        PasswordEncoder encoder,
-                        AuthenticationManager authManager,
-                        JwtTokenProvider jwtTokenProvider) {
+                          IPeopleRepository peopleRepo,
+                          IRolesRepository rolesRepo,
+                          Iteachers teacherRepo,
+                          Isubjects subjectRepo,
+                          TeacherSubjectRepository teacherSubjectRepo,
+                          PasswordEncoder encoder,
+                          AuthenticationManager authManager,
+                          JwtTokenProvider jwtTokenProvider) {
         this.repo = repo;
+        this.peopleRepo = peopleRepo;
+        this.rolesRepo = rolesRepo;
+        this.teacherRepo = teacherRepo;
+        this.subjectRepo = subjectRepo;
+        this.teacherSubjectRepo = teacherSubjectRepo;
         this.encoder = encoder;
         this.authManager = authManager;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -55,17 +80,22 @@ public class AuthService {
         }
 
         // Verificar que el email no esté en uso
-        repo.findByUserName(email).ifPresent(u -> {
+        peopleRepo.findByEmail(email).ifPresent(p -> {
             throw new IllegalStateException("El correo electrónico ya está en uso");
         });
 
-        // Crear y guardar el nuevo usuario
-        users newUser = new users();
-        newUser.setName(name.trim());
-        newUser.setEmail(email.trim().toLowerCase());
-        newUser.setPassword(encoder.encode(rawPassword));
-        newUser.setRole(role);
+        // Obtener o crear persona
+        People person = peopleRepo.findByEmail(email).orElseGet(() -> {
+            People newPerson = new People(name.trim(), email.trim().toLowerCase());
+            return peopleRepo.save(newPerson);
+        });
 
+        // Obtener rol
+        Roles userRole = rolesRepo.findByRoleName(role.name())
+            .orElseThrow(() -> new IllegalStateException("Rol no encontrado: " + role.name()));
+
+        // Crear y guardar el nuevo usuario
+        users newUser = new users(person, userRole, encoder.encode(rawPassword));
         repo.save(newUser);
 
         return "Usuario registrado correctamente";
@@ -98,7 +128,7 @@ public class AuthService {
         repo.save(user);
 
         // Enviar código por email (simulado)
-        sendVerificationEmail(user.getUserName(), verificationCode);
+        sendVerificationEmail(user.getPerson().getEmail(), verificationCode);
 
         return "Código de verificación enviado al correo electrónico";
     }
@@ -261,7 +291,24 @@ public class AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         users user = repo.findByUserName(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        user.setName(newName);
-        repo.save(user);
+        user.getPerson().setFullName(newName);
+        peopleRepo.save(user.getPerson());
+    }
+
+    public void updateUserEmail(String newEmail) {
+        ValidationUtils.validateEmail(newEmail);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        users user = repo.findByUserName(currentEmail).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que el nuevo email no esté en uso por otro usuario
+        peopleRepo.findByEmail(newEmail).ifPresent(p -> {
+            if (p.getPersonId() != user.getPerson().getPersonId()) {
+                throw new IllegalStateException("El correo electrónico ya está en uso");
+            }
+        });
+
+        user.getPerson().setEmail(newEmail.trim().toLowerCase());
+        peopleRepo.save(user.getPerson());
     }
 }

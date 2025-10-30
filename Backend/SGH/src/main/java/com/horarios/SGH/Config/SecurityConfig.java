@@ -80,6 +80,7 @@ public class SecurityConfig {
                     "/schedules-crud",   // ver todos los horarios (GET)
                     "/schedules/history", // historial de horarios
                     "/availability/**",  // disponibilidad de profesores
+                    "/users/*/photo",    // obtener foto de usuario
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",

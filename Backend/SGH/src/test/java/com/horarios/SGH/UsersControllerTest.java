@@ -33,14 +33,16 @@ public class UsersControllerTest {
     @Test
     public void testGetUserByIdSuccess() throws Exception {
         users user = new users();
+        com.horarios.SGH.Model.People person = new com.horarios.SGH.Model.People();
+        person.setFullName("testuser");
         user.setUserId(1);
-        user.setUserName("testuser");
+        user.setPerson(person);
 
         when(usersService.findById(1)).thenReturn(Optional.of(user));
 
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userName").value("testuser"));
+                .andExpect(jsonPath("$.person.fullName").value("testuser"));
     }
 
     @Test
@@ -55,16 +57,17 @@ public class UsersControllerTest {
     @Test
     public void testLoginSuccess() throws Exception {
         users user = new users();
-        user.setUserName("testuser");
-        user.setPassword("password");
+        com.horarios.SGH.Model.People person = new com.horarios.SGH.Model.People();
+        person.setEmail("testuser");
+        user.setPerson(person);
+        user.setPasswordHash("password");
 
         when(usersRepository.findByUserName("testuser")).thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/users/login")
                 .param("userName", "testuser")
                 .param("password", "password"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("OK"));
+                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
@@ -72,8 +75,7 @@ public class UsersControllerTest {
         mockMvc.perform(post("/users/login")
                 .param("userName", "")
                 .param("password", "password"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("El nombre de usuario no puede estar vacío"));
+                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
@@ -83,25 +85,26 @@ public class UsersControllerTest {
         mockMvc.perform(post("/users/login")
                 .param("userName", "testuser")
                 .param("password", "password"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
+                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void testDeleteUserSuccess() throws Exception {
         users user = new users();
-        user.setUserName("testuser");
+        com.horarios.SGH.Model.People person = new com.horarios.SGH.Model.People();
+        person.setEmail("testuser");
+        user.setPerson(person);
 
         when(usersRepository.findByUserName("testuser")).thenReturn(Optional.of(user));
 
-        mockMvc.perform(delete("/users/testuser"))
+        mockMvc.perform(delete("/users/username/testuser"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
     }
 
     @Test
     public void testDeleteMasterUser() throws Exception {
-        mockMvc.perform(delete("/users/master"))
+        mockMvc.perform(delete("/users/username/master"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("No se puede eliminar el usuario master"));
     }
@@ -110,7 +113,7 @@ public class UsersControllerTest {
     public void testDeleteUserNotFound() throws Exception {
         when(usersRepository.findByUserName("testuser")).thenReturn(Optional.empty());
 
-        mockMvc.perform(delete("/users/testuser"))
+        mockMvc.perform(delete("/users/username/testuser"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
     }

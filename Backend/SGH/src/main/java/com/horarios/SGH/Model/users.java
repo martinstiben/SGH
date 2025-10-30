@@ -1,13 +1,7 @@
 package com.horarios.SGH.Model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -16,138 +10,53 @@ import lombok.Data;
 public class users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private int userId;
 
-    @Column(name = "userId")
-        private int userId;
+    @OneToOne
+    @JoinColumn(name = "person_id", nullable = false)
+    @NotNull(message = "La persona es obligatoria")
+    private People person;
 
-    @Column(name = "name")
-    @Size(min = 3, max = 100, message = "El nombre debe tener entre 3 y 100 caracteres")
-        private String name;
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    @NotNull(message = "El rol es obligatorio")
+    private Roles role;
 
-    @Column(name = "email")
-    @Size(min = 3, max = 100, message = "El correo electrónico debe tener entre 3 y 100 caracteres")
-        private String email;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    @NotNull(message = "El hash de la contraseña es obligatorio")
+    @Size(min = 1, max = 255, message = "El hash de la contraseña debe tener entre 1 y 255 caracteres")
+    private String passwordHash;
 
-    @Column(name = "password")
-    @Size(min = 8, max = 12, message = "La contraseña debe tener entre 8 y 12 caracteres")
-        private String password;
+    @Column(name = "verification_code", length = 255)
+    @Size(max = 255, message = "El código de verificación debe tener máximo 255 caracteres")
+    private String verificationCode;
+
+    @Column(name = "code_expiration", columnDefinition = "DATETIME(6)")
+    private java.time.LocalDateTime codeExpiration;
+
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-        private Role role;
+    @Column(name = "account_status", nullable = false)
+    @NotNull(message = "El estado de la cuenta es obligatorio")
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
 
-    @Column(name = "verification_code")
-        private String verificationCode;
+    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private java.time.LocalDateTime createdAt;
 
-    @Column(name = "code_expiration")
-        private java.time.LocalDateTime codeExpiration;
-
-    @Column(name = "photoData")
-    @Lob
-    private byte[] photoData;
-
-    @Column(name = "photoContentType", length = 100)
-    private String photoContentType;
-
-    @Column(name = "photoFileName", length = 255)
-    private String photoFileName;
-
-    public users(int userId, String name, String email, String password) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
-
+    // Constructor vacío
     public users() {
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    // Para compatibilidad con autenticación, getUserName retorna email
-    public String getUserName() {
-        return email;
-    }
-
-    public void setUserName(String userName) {
-        this.email = userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public java.time.LocalDateTime getCodeExpiration() {
-        return codeExpiration;
-    }
-
-    public void setCodeExpiration(java.time.LocalDateTime codeExpiration) {
-        this.codeExpiration = codeExpiration;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
+    // Constructor con parámetros principales
+    public users(People person, Roles role, String passwordHash) {
+        this.person = person;
         this.role = role;
+        this.passwordHash = passwordHash;
+        this.createdAt = java.time.LocalDateTime.now();
     }
 
-    public byte[] getPhotoData() {
-        return photoData;
-    }
-
-    public void setPhotoData(byte[] photoData) {
-        this.photoData = photoData;
-    }
-
-    public String getPhotoContentType() {
-        return photoContentType;
-    }
-
-    public void setPhotoContentType(String photoContentType) {
-        this.photoContentType = photoContentType;
-    }
-
-    public String getPhotoFileName() {
-        return photoFileName;
-    }
-
-    public void setPhotoFileName(String photoFileName) {
-        this.photoFileName = photoFileName;
-    }
+    // Getters y setters generados por Lombok (@Data)
 }

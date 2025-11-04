@@ -33,7 +33,7 @@ export default function RegisterPage() {
     try {
       setAuthError("");
       setSuccessMessage("");
-      const data = await register(name, email, password, role, subjectId);
+      const data = await register(name, email, password, role, subjectId || undefined);
 
       if (data.message) {
         setSuccessMessage("¡Registro exitoso! Redirigiendo al login...");

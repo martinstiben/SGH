@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   mysql:
-    image: mysql:8.0
+    image: martinstiben/sgh-mysql:1.0
     container_name: mysql_db
     restart: always
     environment:
@@ -18,11 +18,8 @@ services:
       - my_network
 
   backend:
+    image: martinstiben/sgh-backend:1.0
     container_name: springboot_app
-    build:
-      context: ./Backend/SGH
-      dockerfile: Dockerfile
-    image: mi-springboot-app:1.0
     ports:
       - "8085:8085"
     environment:
@@ -38,11 +35,8 @@ services:
     restart: always
 
   frontend-web:
+    image: martinstiben/sgh-frontend-web:1.0
     container_name: nextjs_app
-    build:
-      context: ./Frontend/frontend_Web
-      dockerfile: Dockerfile
-    image: mi-nextjs-app:1.0
     ports:
       - "3000:3000"
     environment:
@@ -54,11 +48,8 @@ services:
     restart: always
 
   frontend-movil:
+    image: martinstiben/sgh-frontend-movil:1.0
     container_name: expo_app
-    build:
-      context: ./Frontend/SGH-Movil
-      dockerfile: Dockerfile
-    image: mi-expo-app:1.0
     ports:
       - "19006:19006"
     environment:

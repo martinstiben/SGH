@@ -66,7 +66,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
           <img
-            src="/byte.png"
+            src="/byteWhite.png"
             alt="Bytestock Logo"
             className="mx-auto mb-4 w-full max-w-48 h-auto sm:max-w-56 object-contain"
           />

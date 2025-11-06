@@ -100,14 +100,6 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
       hasError = true;
     }
 
-    if (!email.trim()) {
-      setEmailError('El email es obligatorio');
-      hasError = true;
-    } else if (!/^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
-      setEmailError('El email debe tener un formato válido');
-      hasError = true;
-    }
-
     if (!password) {
       setPasswordError('La contraseña es obligatoria');
       hasError = true;
@@ -160,13 +152,13 @@ export default function RegisterForm({ onBack, onSubmit, authError, successMessa
     >
 
       {/* Contenedor del formulario */}
-      <div className="bg-gray-900/85 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md p-6 sm:p-8 md:p-12 text-white">
+      <div className="bg-gray-900/85 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md sm:max-w-lg p-6 sm:p-8 md:p-12 text-white">
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
           <img
-            src="/byte.png"
+            src="/byteWhite.png"
             alt="Bytestock Logo"
-            className="mx-auto mb-4 w-full max-w-48 h-auto sm:max-w-56 object-contain"
+            className="mx-auto mb-4 w-32 h-32 sm:w-40 sm:h-40 object-contain"
           />
           <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2">
             Registro de usuario

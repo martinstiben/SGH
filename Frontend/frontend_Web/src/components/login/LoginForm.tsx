@@ -97,7 +97,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
                 setEmail(e.target.value);
                 if (emailError) setEmailError(""); // Limpiar error al escribir
               }}
-              className={`w-full pl-20 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+              className={`w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                 (emailError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
             />
@@ -120,7 +120,7 @@ export default function LoginForm({ onBack, onSubmit, authError, successMessage 
                 setPassword(e.target.value);
                 if (passwordError) setPasswordError(""); // Limpiar error al escribir
               }}
-              className={`w-full pl-20 pr-12 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+              className={`w-full pl-12 pr-12 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                 (passwordError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
             />

@@ -33,16 +33,16 @@
   --color-popover: var(--popover);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+  --font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
   --radius: var(--radius);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #f8fafc;  
-    --foreground: #f8fafc;
-    --primary: #f8fafc;
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --primary: #e2e8f0;
     --secondary: #94a3b8;
     --accent: #60a5fa;
     --success: #34d399;
@@ -88,13 +88,14 @@ p {
   margin: 0 0 1rem 0;
 }
 
-a {
+/* Estilos base para elementos generales - solo aplican a contenido principal */
+.content a {
   color: var(--accent);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-a:hover {
+.content a:hover {
   color: var(--accent);
   text-decoration: underline;
 }
@@ -106,7 +107,8 @@ button {
   transition: all 0.2s ease;
 }
 
-input, textarea, select {
+/* Estilos base para inputs - solo aplican a contenido principal */
+.content input, .content textarea, .content select {
   font-family: inherit;
   font-size: inherit;
   border: 1px solid var(--border);
@@ -117,10 +119,10 @@ input, textarea, select {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus, textarea:focus, select:focus {
+.content input:focus, .content textarea:focus, .content select:focus {
   outline: none;
   border-color: var(--ring);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgb(255, 255, 255);
 }
 
 @keyframes fadeIn {
@@ -200,70 +202,7 @@ input:focus, textarea:focus, select:focus {
   animation: shimmer 1.5s infinite;
 }
 
-/* Utilidades adicionales */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
 
-.focus-visible:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
 
-.prose {
-  max-width: 65ch;
-  line-height: 1.7;
-}
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-.prose p {
-  margin-bottom: 1rem;
-}
-
-.prose ul, .prose ol {
-  margin-bottom: 1rem;
-  padding-left: 1.5rem;
-}
-
-.prose li {
-  margin-bottom: 0.5rem;
-}
-
-.prose code {
-  background: var(--muted);
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.875em;
-}
-
-.prose pre {
-  background: var(--muted);
-  padding: 1rem;
-  border-radius: var(--radius);
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.875em;
-  margin-bottom: 1rem;
-}
-
-.prose blockquote {
-  border-left: 4px solid var(--border);
-  padding-left: 1rem;
-  margin: 1rem 0;
-  font-style: italic;
-  color: var(--secondary);
-}
 

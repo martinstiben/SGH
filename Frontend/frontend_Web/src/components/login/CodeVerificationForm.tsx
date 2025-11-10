@@ -60,7 +60,7 @@ export default function CodeVerificationForm({ onBack, onSubmit, authError, succ
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
           <img
-            src="/logo.png"
+            src="./byteWhite.png"
             alt="Logo"
             className="mx-auto mb-4 w-20 h-20 sm:w-24 sm:h-24 object-contain"
           />
@@ -89,7 +89,7 @@ export default function CodeVerificationForm({ onBack, onSubmit, authError, succ
                 setCode(value);
                 if (codeError) setCodeError(""); // Limpiar error al escribir
               }}
-              className={`w-full pl-20 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-center text-lg font-mono tracking-widest ${
+              className={`w-full pl-20 pr-4 py-2.5 sm:py-3 rounded-lg bg-gray-800/70 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-center text-lg font-mono tracking-widest bg-gray-800 ${
                 (codeError || authError) ? 'border-red-500 focus:ring-red-500' : 'border-gray-600/50 focus:ring-blue-500'
               }`}
               maxLength={6}

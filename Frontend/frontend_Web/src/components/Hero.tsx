@@ -24,7 +24,7 @@ export default function Hero() {
 
       {/* Logo esquina */}
       <div className="absolute top-8 left-8 lg:top-12 lg:left-16">
-        <span className="text-slate-800 font-bold text-2xl lg:text-3xl tracking-tight">SGH</span>
+        <span className="text-slate-900 font-extrabold text-3xl lg:text-4xl tracking-tight drop-shadow-sm">SGH</span>
       </div>
 
       {/* Botón ingresar */}

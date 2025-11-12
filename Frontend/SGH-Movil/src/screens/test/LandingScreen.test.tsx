@@ -13,6 +13,6 @@ describe('LandingScreen component', () => {
   it('renders the title correctly', () => {
     const { getByText } = render(<LandingScreen />);
 
-    expect(getByText('Gimnasio Americano ABC')).toBeTruthy();
+    expect(getByText('SGH - Sistema de Gestión de Horarios')).toBeTruthy();
   });
 });

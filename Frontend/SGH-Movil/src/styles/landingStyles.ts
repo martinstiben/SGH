@@ -1,25 +1,248 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#fff' },
+  // Contenedor principal sobrio
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
 
-  // Header
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold' },
-  headerButton: { backgroundColor: '#007BFF', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 5 },
-  headerButtonText: { color: '#fff', fontWeight: 'bold' },
+  // Header elegante con azul suave
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#3b82f6',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '500',
+    color: '#f8fafc',
+  },
+  headerButton: {
+    backgroundColor: '#60a5fa',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 16,
+    elevation: 0,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+  },
+  headerButtonText: {
+    color: '#f8fafc',
+    fontWeight: '500',
+    fontSize: 13,
+    letterSpacing: 0.2,
+  },
 
-  // Logo
-  logo: { width: 150, height: 150, alignSelf: 'center', marginBottom: 20, resizeMode: 'contain' },
+  // Sección Hero con azul suave
+  heroSection: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 32,
+    backgroundColor: '#eff6ff',
+    marginHorizontal: 12,
+    marginTop: 12,
+    borderRadius: 12,
+    elevation: 0,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+  },
+  heroLogo: {
+    width: 110,
+    height: 110,
+    resizeMode: 'contain',
+    marginBottom: 18,
+    opacity: 0.9,
+  },
+  heroTitle: {
+    fontSize: 26,
+    fontWeight: '500',
+    color: '#1e40af',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 32,
+    letterSpacing: -0.2,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    color: '#1e3a8a',
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 12,
+    fontWeight: '400',
+  },
 
-  // InfoCard
-  infoCard: { backgroundColor: '#f9f9f9', padding: 15, borderRadius: 10, marginBottom: 20 },
-  infoText: { fontSize: 14, marginBottom: 5 },
+  // Secciones con separación sutil
+  statsSection: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+  },
+  benefitsSection: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#1e40af',
+    marginBottom: 16,
+    textAlign: 'center',
+    letterSpacing: -0.1,
+  },
 
-  // Stats
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between' },
-  statCard: { alignItems: 'center', flex: 1, marginHorizontal: 5, backgroundColor: '#f1f1f1', padding: 10, borderRadius: 10 },
-  statIcon: { width: 40, height: 40, marginBottom: 5, resizeMode: 'contain' },
-  statNumber: { fontSize: 18, fontWeight: 'bold' },
-  statLabel: { fontSize: 12, textAlign: 'center' },
+  // Stats con azul suave
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  statCard: {
+    alignItems: 'center',
+    flex: 1,
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 12,
+    marginHorizontal: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    minHeight: 110,
+    justifyContent: 'center',
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    marginBottom: 10,
+    resizeMode: 'contain',
+    opacity: 0.8,
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1e40af',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  statLabel: {
+    fontSize: 11,
+    textAlign: 'center',
+    color: '#6b7280',
+    lineHeight: 16,
+    fontWeight: '400',
+    paddingHorizontal: 2,
+  },
+
+  // Sección de beneficios con azul suave
+  benefitCard: {
+    backgroundColor: '#ffffff',
+    padding: 18,
+    borderRadius: 10,
+    marginBottom: 14,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    borderLeftWidth: 3,
+    borderLeftColor: '#3b82f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  benefitTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1e40af',
+    marginBottom: 8,
+    letterSpacing: -0.1,
+  },
+  benefitDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+    fontWeight: '400',
+  },
+
+  // Call to Action con azul suave
+  ctaSection: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 32,
+    marginTop: 24,
+    backgroundColor: '#eff6ff',
+    marginHorizontal: 12,
+    borderRadius: 16,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+  },
+  ctaButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 20,
+    elevation: 1,
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    marginBottom: 16,
+    minWidth: 160,
+    alignItems: 'center',
+  },
+  ctaButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  ctaDescription: {
+    fontSize: 14,
+    color: '#1e3a8a',
+    textAlign: 'center',
+    lineHeight: 20,
+    fontWeight: '400',
+    paddingHorizontal: 16,
+  },
+
+  // Footer sobrio
+  footer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#f9fafb',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  footerText: {
+    fontSize: 11,
+    color: '#9ca3af',
+    textAlign: 'center',
+    fontWeight: '400',
+  },
 });
